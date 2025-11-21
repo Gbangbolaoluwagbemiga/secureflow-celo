@@ -571,13 +571,13 @@ export default function CreateEscrowPage() {
           }
 
           // Method 2: Try getContract call (fallback)
-          if (!balance) {
+          if (balance === null) {
             try {
               const fallbackBalance = await tokenContract.call(
                 "balanceOf",
                 checksummedAddress
               );
-              if (fallbackBalance) {
+              if (fallbackBalance !== null && fallbackBalance !== undefined) {
                 balance = fallbackBalance;
                 balanceSource = "getContract";
                 console.log(
@@ -594,7 +594,7 @@ export default function CreateEscrowPage() {
           }
 
           // Method 3: Try direct RPC call as last resort
-          if (!balance) {
+          if (balance === null) {
             try {
               const rpcProvider = new ethers.JsonRpcProvider(
                 CELO_MAINNET.rpcUrls[0]
@@ -607,7 +607,7 @@ export default function CreateEscrowPage() {
               const rpcBalance = await tokenContractRPC.balanceOf(
                 checksummedAddress
               );
-              if (rpcBalance) {
+              if (rpcBalance !== null && rpcBalance !== undefined) {
                 balance = rpcBalance;
                 balanceSource = "directRPC";
                 console.log("✅ Balance from direct RPC:", balance.toString());
@@ -620,9 +620,9 @@ export default function CreateEscrowPage() {
             }
           }
 
-          if (!balance) {
+          if (balance === null || balance === undefined) {
             throw new Error(
-              "Failed to retrieve token balance from all methods. Please check your wallet connection and network."
+              `Failed to retrieve ${tokenSymbol} token balance. Please check your wallet connection and network.`
             );
           }
 
@@ -653,9 +653,11 @@ export default function CreateEscrowPage() {
             const totalAmountFormatted =
               Number(totalAmountBigInt) / Number(divisor);
             throw new Error(
-              `Insufficient token balance. You have ${balanceFormatted.toFixed(
+              `Insufficient ${tokenSymbol} balance! You have ${balanceFormatted.toFixed(
                 4
-              )} tokens but need ${totalAmountFormatted.toFixed(4)} tokens.`
+              )} ${tokenSymbol} but need ${totalAmountFormatted.toFixed(
+                4
+              )} ${tokenSymbol}. Please add more ${tokenSymbol} tokens to your wallet.`
             );
           }
         } catch (balanceError: any) {
