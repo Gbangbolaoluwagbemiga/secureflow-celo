@@ -15,8 +15,8 @@ import { AppKit } from "@/lib/web3/reown-config";
 import { FarcasterSDKProvider } from "@/components/farcaster-sdk-provider";
 
 export const metadata: Metadata = {
-  title: "SecureFlow - Trustless Escrow on Base",
-  description: "Trustless payments with transparent milestones powered by Base",
+  title: "SecureFlow - Trustless Escrow on Celo",
+  description: "Trustless payments with transparent milestones powered by Celo",
   generator: "SecureFlow",
   manifest: "/manifest.json",
   icons: {

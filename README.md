@@ -6,7 +6,7 @@
 
 ## 🚀 Overview
 
-SecureFlow is a comprehensive decentralized platform combining escrow services with a freelance marketplace, built on Base blockchain. Features gasless transactions through MetaMask Smart Accounts, multi-arbiter dispute resolution, and reputation systems.
+SecureFlow is a comprehensive decentralized platform combining escrow services with a freelance marketplace, built on Celo blockchain. Features gasless transactions through MetaMask Smart Accounts, multi-arbiter dispute resolution, and reputation systems.
 
 ## ✨ Key Features
 
@@ -16,7 +16,7 @@ SecureFlow is a comprehensive decentralized platform combining escrow services w
 - **Gasless Transactions**: MetaMask Smart Account integration for zero-fee transactions
 - **Multi-Arbiter Consensus**: 1-5 arbiters with quorum-based voting
 - **Reputation System**: Anti-gaming reputation tracking
-- **Native & ERC20 Support**: ETH and whitelisted ERC20 tokens (USDC on Base)
+- **Native & ERC20 Support**: CELO and whitelisted ERC20 tokens (cUSD on Celo)
 
 ### 🎯 Advanced Features
 
@@ -57,7 +57,7 @@ SecureFlow is a comprehensive decentralized platform combining escrow services w
 
 - Node.js 18+
 - MetaMask wallet
-- Base testnet access
+- Celo mainnet access
 
 ### Installation
 
@@ -84,11 +84,11 @@ cp frontend/.env.example frontend/.env.local
 3. **Deploy contracts**
 
 ```bash
-# Deploy to Base testnet
-npx hardhat run scripts/deploy.js --network baseTestnet
+# Deploy to Celo testnet
+npx hardhat run scripts/deploy.js --network celoTestnet
 
-# Deploy to Base mainnet (requires funding)
-npx hardhat run scripts/deploy-minimal.js --network base
+# Deploy to Celo mainnet
+npx hardhat run scripts/deploy-minimal.js --network celo
 ```
 
 4. **Start frontend**
@@ -135,11 +135,11 @@ npm test
 ### Smart Contracts
 
 ```bash
-# Deploy to Base testnet
-npx hardhat run scripts/deploy.js --network baseTestnet
+# Deploy to Celo testnet
+npx hardhat run scripts/deploy.js --network celoTestnet
 
-# Deploy to Base mainnet (requires funding)
-npx hardhat run scripts/deploy-minimal.js --network base
+# Deploy to Celo mainnet
+npx hardhat run scripts/deploy-minimal.js --network celo
 ```
 
 ### Frontend (Vercel)
@@ -155,18 +155,17 @@ vercel --prod
 
 ## 📊 Current Deployment
 
-### Base Testnet (Active)
-- **SecureFlow Contract**: `0xC423E1272d73C2a80F6e4450b35F4eC134101DEe`
-- **MockERC20 Token**: `0x7ab26a7ce5d4479bf6Be1B30D27a74C4a997ebf4`
-- **Network**: Base Testnet (Chain ID: 84532)
-- **Explorer**: https://sepolia.basescan.org/address/0xC423E1272d73C2a80F6e4450b35F4eC134101DEe
+### Celo Mainnet (Active)
+- **SecureFlow Contract**: `0x1173Bcc9183f29aFbB6f4C7E3c0b25476D3daF0F`
+- **cUSD Token**: `0x765DE816845861e75A25fCA122bb6898B8B1282a`
+- **Network**: Celo Mainnet (Chain ID: 42220)
+- **Explorer**: https://celoscan.io/address/0x1173Bcc9183f29aFbB6f4C7E3c0b25476D3daF0F
 - **Status**: ✅ Production Ready
 
-### Base Mainnet (Pending)
-- **Status**: ⚠️ Pending deployment (requires funding)
-- **Deployer**: `0x3Be7fbBDbC73Fc4731D60EF09c4BA1A94DC58E41`
-- **Required**: 0.02+ ETH for deployment
-- **Network**: Base Mainnet (Chain ID: 8453)
+### Celo Testnet (Alfajores)
+- **Network**: Celo Alfajores (Chain ID: 44787)
+- **Explorer**: https://alfajores.celoscan.io/
+- **Status**: Available for testing
 
 ## 🔧 Configuration
 
@@ -184,12 +183,11 @@ function revokeArbiter(address arbiter) external onlyOwner
 ### Frontend Configuration
 
 ```typescript
-// Contract addresses (Base Testnet)
+// Contract addresses (Celo Mainnet)
 export const CONTRACTS = {
-  SECUREFLOW_ESCROW_TESTNET: "0xC423E1272d73C2a80F6e4450b35F4eC134101DEe",
-  SECUREFLOW_ESCROW_MAINNET: "TBD", // Pending Base mainnet deployment
-  MOCK_TOKEN_TESTNET: "0x7ab26a7ce5d4479bf6Be1B30D27a74C4a997ebf4",
-  USDC_BASE_MAINNET: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  SECUREFLOW_ESCROW: "0x1173Bcc9183f29aFbB6f4C7E3c0b25476D3daF0F",
+  CUSD_MAINNET: "0x765DE816845861e75A25fCA122bb6898B8B1282a",
+  USDC_MAINNET: "0xcebA9300f2b948710d2653dD7B07f33A8B32118C",
 };
 ```
 

@@ -1,7 +1,7 @@
 {
-  "name": "SecureFlow - Trustless Escrow on Base",
+  "name": "SecureFlow - Trustless Escrow on Celo",
   "short_name": "SecureFlow",
-  "description": "Trustless payments with transparent milestones powered by Base",
+  "description": "Trustless payments with transparent milestones powered by Celo",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
