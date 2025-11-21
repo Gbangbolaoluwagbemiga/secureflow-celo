@@ -1204,33 +1204,34 @@ export default function AdminPage() {
             </Card>
           </div>
 
-          {/* Token Management Section */}
-          <Card className="glass border-primary/20 p-6 mt-6">
-            <h2 className="text-2xl font-bold mb-6">Token Management</h2>
-            <div className="space-y-4">
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <Label htmlFor="tokenAddress" className="mb-2 block">
-                    Token Address
-                  </Label>
-                  <Input
-                    id="tokenAddress"
-                    placeholder="0x..."
-                    value={tokenAddress}
-                    onChange={(e) => setTokenAddress(e.target.value)}
-                    className="font-mono"
-                    disabled={isWhitelisting}
-                  />
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Enter a token address to whitelist it. Only whitelisted
-                    tokens can be used in escrows.
-                  </p>
-                </div>
-                <div className="flex items-end">
+          {/* Token Management & Arbiter Management - Side by Side */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            {/* Token Management Section */}
+            <Card className="glass border-primary/20 p-6">
+              <h2 className="text-2xl font-bold mb-6">Token Management</h2>
+              <div className="space-y-4">
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="tokenAddress" className="mb-2 block">
+                      Token Address
+                    </Label>
+                    <Input
+                      id="tokenAddress"
+                      placeholder="0x..."
+                      value={tokenAddress}
+                      onChange={(e) => setTokenAddress(e.target.value)}
+                      className="font-mono"
+                      disabled={isWhitelisting}
+                    />
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Enter a token address to whitelist it. Only whitelisted
+                      tokens can be used in escrows.
+                    </p>
+                  </div>
                   <Button
                     onClick={handleWhitelistToken}
                     disabled={isWhitelisting || !tokenAddress}
-                    className="gap-2"
+                    className="gap-2 w-full"
                   >
                     {isWhitelisting ? (
                       <>
@@ -1245,49 +1246,47 @@ export default function AdminPage() {
                     )}
                   </Button>
                 </div>
-              </div>
-              <div className="pt-4 border-t border-muted/50">
-                <p className="text-sm font-semibold mb-2">Quick Actions:</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setTokenAddress(CONTRACTS.CUSD_MAINNET)}
-                  className="gap-2"
-                >
-                  <Shield className="h-3 w-3" />
-                  Whitelist cUSD ({CONTRACTS.CUSD_MAINNET.slice(0, 10)}...)
-                </Button>
-              </div>
-            </div>
-          </Card>
-
-          {/* Arbiter Management Section */}
-          <Card className="glass border-primary/20 p-6 mt-6">
-            <h2 className="text-2xl font-bold mb-6">Arbiter Management</h2>
-            <div className="space-y-4">
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <Label htmlFor="arbiterAddress" className="mb-2 block">
-                    Arbiter Address
-                  </Label>
-                  <Input
-                    id="arbiterAddress"
-                    placeholder="0x..."
-                    value={arbiterAddress}
-                    onChange={(e) => setArbiterAddress(e.target.value)}
-                    className="font-mono"
-                    disabled={isAuthorizing}
-                  />
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Authorize an arbiter address. Only authorized arbiters can
-                    be used in escrows.
-                  </p>
+                <div className="pt-4 border-t border-muted/50">
+                  <p className="text-sm font-semibold mb-2">Quick Actions:</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTokenAddress(CONTRACTS.CUSD_MAINNET)}
+                    className="gap-2 w-full"
+                  >
+                    <Shield className="h-3 w-3" />
+                    Whitelist cUSD ({CONTRACTS.CUSD_MAINNET.slice(0, 10)}...)
+                  </Button>
                 </div>
-                <div className="flex items-end">
+              </div>
+            </Card>
+
+            {/* Arbiter Management Section */}
+            <Card className="glass border-primary/20 p-6">
+              <h2 className="text-2xl font-bold mb-6">Arbiter Management</h2>
+              <div className="space-y-4">
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="arbiterAddress" className="mb-2 block">
+                      Arbiter Address
+                    </Label>
+                    <Input
+                      id="arbiterAddress"
+                      placeholder="0x..."
+                      value={arbiterAddress}
+                      onChange={(e) => setArbiterAddress(e.target.value)}
+                      className="font-mono"
+                      disabled={isAuthorizing}
+                    />
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Authorize an arbiter address. Only authorized arbiters can
+                      be used in escrows.
+                    </p>
+                  </div>
                   <Button
                     onClick={handleAuthorizeArbiter}
                     disabled={isAuthorizing || !arbiterAddress}
-                    className="gap-2"
+                    className="gap-2 w-full"
                   >
                     {isAuthorizing ? (
                       <>
@@ -1302,22 +1301,22 @@ export default function AdminPage() {
                     )}
                   </Button>
                 </div>
+                <div className="pt-4 border-t border-muted/50">
+                  <p className="text-sm font-semibold mb-2">Quick Actions:</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setArbiterAddress(wallet.address || "")}
+                    className="gap-2 w-full"
+                    disabled={!wallet.address}
+                  >
+                    <Shield className="h-3 w-3" />
+                    Authorize Default Arbiter (Your Wallet)
+                  </Button>
+                </div>
               </div>
-              <div className="pt-4 border-t border-muted/50">
-                <p className="text-sm font-semibold mb-2">Quick Actions:</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setArbiterAddress(wallet.address || "")}
-                  className="gap-2"
-                  disabled={!wallet.address}
-                >
-                  <Shield className="h-3 w-3" />
-                  Authorize Default Arbiter (Your Wallet)
-                </Button>
-              </div>
-            </div>
-          </Card>
+            </Card>
+          </div>
 
           <Card className="glass border-primary/20 p-6">
             <h2 className="text-2xl font-bold mb-6">Contract Information</h2>
