@@ -16,10 +16,6 @@ import { useAdminStatus } from "@/hooks/use-admin-status";
 import { useToast } from "@/hooks/use-toast";
 import { CONTRACTS, CELO_MAINNET } from "@/lib/web3/config";
 import { SECUREFLOW_ABI } from "@/lib/web3/abis";
-import { AdminHeader } from "@/components/admin/admin-header";
-import { AdminStats } from "@/components/admin/admin-stats";
-import { ContractControls } from "@/components/admin/contract-controls";
-import { AdminLoading } from "@/components/admin/admin-loading";
 import { DisputeResolution } from "@/components/admin/dispute-resolution";
 import {
   Lock,
