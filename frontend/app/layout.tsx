@@ -7,6 +7,7 @@ import { Web3Provider } from "@/contexts/web3-context";
 import { SmartAccountProvider } from "@/contexts/smart-account-context";
 import { DelegationProvider } from "@/contexts/delegation-context";
 import { NotificationProvider } from "@/contexts/notification-context";
+import { SelfVerificationProvider } from "@/contexts/self-verification-context";
 import { Navbar } from "@/components/navbar";
 import { Toaster } from "@/components/ui/toaster";
 import { Suspense } from "react";
@@ -73,9 +74,11 @@ export default function RootLayout({
                   <DelegationProvider>
                     <SmartAccountProvider>
                       <NotificationProvider>
-                        <Navbar />
-                        <main className="pt-16">{children}</main>
-                        <Toaster />
+                        <SelfVerificationProvider>
+                          <Navbar />
+                          <main className="pt-16">{children}</main>
+                          <Toaster />
+                        </SelfVerificationProvider>
                       </NotificationProvider>
                     </SmartAccountProvider>
                   </DelegationProvider>
