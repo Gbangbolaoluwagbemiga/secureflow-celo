@@ -15,11 +15,18 @@ async function getVerifier() {
     // Dynamic import to avoid build-time issues
     const { SelfBackendVerifier } = await import("@selfxyz/core");
     
+    // Configure allowed attestation types
+    // Attestation IDs: 1 = Electronic Passport, 2 = EU ID Card
+    // Allow both passport and ID card attestations
+    const allowedIds = new Map<number, boolean>();
+    allowedIds.set(1, true); // Electronic Passport (NFC-enabled)
+    allowedIds.set(2, true); // EU ID Card (NFC-enabled)
+    
     verifier = new SelfBackendVerifier(
       "secureflow-identity", // Your app scope
       "", // Self Protocol doesn't require an API endpoint - proofs are verified locally
       process.env.NODE_ENV === "development", // devMode
-      new Map(), // allowedIds - configure based on your needs
+      allowedIds, // allowedIds - accept passports and EU ID cards
       null as any, // configStorage - implement based on Self Protocol docs
       "hex" // identifier type - using 'hex' since we use wallet addresses
     );
@@ -170,35 +177,27 @@ export async function POST(request: NextRequest) {
     try {
       const selfVerifier = await getVerifier();
       
-      // Determine attestation ID - check multiple possible locations
-      // Self Protocol may send attestationId as a number (e.g., 1) or string
-      // Convert number to string mapping: 1 = "humanity"
-      let verificationAttestationId: string = "humanity"; // Default
+      // Determine attestation ID - Self Protocol uses numeric IDs
+      // 1 = Electronic Passport (NFC-enabled), 2 = EU ID Card (NFC-enabled)
+      // The verifier expects the numeric ID directly
+      let verificationAttestationId: number = 1; // Default to passport (ID: 1)
       
       if (finalAttestationId !== undefined && finalAttestationId !== null) {
-        // If it's a number, map it to the attestation type
+        // Use the attestation ID directly (should be a number)
         if (typeof finalAttestationId === 'number') {
-          // Map common attestation IDs to types
-          const attestationMap: { [key: number]: string } = {
-            1: "humanity",
-            2: "minimumAge",
-            3: "ageRange",
-          };
-          verificationAttestationId = attestationMap[finalAttestationId] || "humanity";
+          verificationAttestationId = finalAttestationId;
         } else {
-          verificationAttestationId = String(finalAttestationId);
+          // Try to parse string numbers
+          const parsed = parseInt(String(finalAttestationId), 10);
+          verificationAttestationId = isNaN(parsed) ? 1 : parsed;
         }
       } else if (finalProof?.attestationId) {
         const proofAttestationId = finalProof.attestationId;
         if (typeof proofAttestationId === 'number') {
-          const attestationMap: { [key: number]: string } = {
-            1: "humanity",
-            2: "minimumAge",
-            3: "ageRange",
-          };
-          verificationAttestationId = attestationMap[proofAttestationId] || "humanity";
+          verificationAttestationId = proofAttestationId;
         } else {
-          verificationAttestationId = String(proofAttestationId);
+          const parsed = parseInt(String(proofAttestationId), 10);
+          verificationAttestationId = isNaN(parsed) ? 1 : parsed;
         }
       }
       

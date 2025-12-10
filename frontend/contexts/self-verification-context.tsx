@@ -77,16 +77,9 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
         userIdType: 'hex', // Address is hex format
         version: 2,
         disclosures: {
-          // Request humanity verification - ensures user is a real person
-          // Note: minimumAge requires specific attestation configuration
-          // Using humanity for broader compatibility
-          humanity: true,
-          // You can add more disclosures as needed:
-          // minimumAge: 18,
-          // issuing_state: false,
-          // name: false,
-          // date_of_birth: false,
-          // nationality: false,
+          // Try most basic verification first - just passport/ID verification
+          // This is the simplest attestation type that should work
+          // If this fails, we can try other configurations
         },
       }).build();
       
@@ -357,10 +350,22 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
     return (
       <div className="flex flex-col items-center gap-4 p-6">
         <SelfQRcodeWrapper selfApp={selfApp} />
-        <p className="text-sm text-muted-foreground text-center max-w-md">
-          Scan this QR code with the Self mobile app to verify your identity.
-          This helps prevent fraud and ensures a trusted platform.
-        </p>
+        <div className="text-sm text-muted-foreground text-center max-w-md space-y-2">
+          <p>
+            Scan this QR code with the Self mobile app to verify your identity.
+          </p>
+          <div className="text-xs space-y-1 mt-3 p-3 bg-blue-50 dark:bg-blue-950 rounded border border-blue-200 dark:border-blue-800">
+            <p className="font-semibold text-blue-900 dark:text-blue-100">Requirements:</p>
+            <ul className="list-disc list-inside space-y-1 text-blue-800 dark:text-blue-200">
+              <li>Self mobile app installed</li>
+              <li>Valid passport or government ID added to Self app</li>
+              <li>Stable internet connection</li>
+            </ul>
+            <p className="mt-2 text-blue-700 dark:text-blue-300">
+              If proof generation fails, ensure your ID is properly set up in the Self app.
+            </p>
+          </div>
+        </div>
       </div>
     );
   }, [selfApp]); // Only recreate if selfApp changes
