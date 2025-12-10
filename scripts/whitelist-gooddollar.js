@@ -9,15 +9,11 @@
 
 const hre = require("hardhat");
 
-// TODO: Update this address once you find the official G$ token address on Celo
-// You can find it by:
-// 1. Running: node scripts/find-gooddollar-celo.js
-// 2. Checking GoodWallet GitHub: https://github.com/GoodDollar
-// 3. Checking CeloScan: https://celoscan.io (search "GoodDollar")
-// 4. Checking GoodDollar Discord/community
+// Official G$ token address on Celo (from GoodDollar documentation)
+// Source: https://docs.gooddollar.org/frequently-asked-questions/gooddollar-protocol-and-gusd-token
 const GDOLLAR_CELO_ADDRESS = 
   process.env.GDOLLAR_CELO_ADDRESS || 
-  "0x0000000000000000000000000000000000000000"; // Placeholder - UPDATE THIS!
+  "0x62B8B11039FcfE5aB0C56E502b1C372A3d2a9c7A"; // Official G$ on Celo
 
 async function main() {
   console.log("🌍 Whitelisting GoodDollar (G$) on SecureFlow\n");
@@ -44,12 +40,26 @@ async function main() {
 
   // Load deployed contract
   const deployedInfo = require("../deployed.json");
-  const secureFlowAddress = deployedInfo.networks[hre.network.name]?.SecureFlow;
+  
+  // Try different possible structures
+  let secureFlowAddress = null;
+  
+  if (deployedInfo.contracts && deployedInfo.contracts.SecureFlow) {
+    // Structure: { contracts: { SecureFlow: "0x..." } }
+    secureFlowAddress = deployedInfo.contracts.SecureFlow;
+  } else if (deployedInfo.networks && deployedInfo.networks[hre.network.name]) {
+    secureFlowAddress = deployedInfo.networks[hre.network.name]?.SecureFlow;
+  } else if (deployedInfo.networks && deployedInfo.networks.celo) {
+    secureFlowAddress = deployedInfo.networks.celo?.SecureFlow;
+  } else if (deployedInfo.SecureFlow) {
+    secureFlowAddress = deployedInfo.SecureFlow;
+  }
 
   if (!secureFlowAddress) {
-    console.error("\n❌ ERROR: SecureFlow contract not found in deployed.json");
-    console.log("Please deploy the contract first or check deployed.json");
-    process.exit(1);
+    // Use known deployed address (from frontend config)
+    const knownAddress = "0x067FDA1ED957BB352679cbc840Ce6329E470fd07";
+    console.log(`\n💡 Using known deployed address: ${knownAddress}`);
+    secureFlowAddress = knownAddress;
   }
 
   console.log("\nSecureFlow Contract:", secureFlowAddress);
@@ -104,9 +114,11 @@ async function main() {
 
   // Whitelist the token
   console.log("\n📝 Whitelisting G$ token...");
+  let txHash = null;
   try {
     const tx = await secureFlow.whitelistToken(GDOLLAR_CELO_ADDRESS);
-    console.log("   Transaction hash:", tx.hash);
+    txHash = tx.hash;
+    console.log("   Transaction hash:", txHash);
     console.log("   Waiting for confirmation...");
 
     const receipt = await tx.wait();
@@ -117,11 +129,12 @@ async function main() {
     if (nowWhitelisted) {
       console.log("\n✅ SUCCESS: G$ token whitelisted!");
       console.log("\n📋 Next steps:");
-      console.log("1. Update frontend/lib/web3/config.ts with G$ address");
-      console.log("2. Update frontend/app/create/page.tsx TOKEN_INFO");
+      console.log("1. ✅ Config already updated (frontend/lib/web3/config.ts)");
+      console.log("2. ✅ Token info already added (frontend/app/create/page.tsx)");
       console.log("3. Test creating escrow with G$ token");
     } else {
       console.error("\n❌ ERROR: Token whitelisting may have failed");
+      console.log("   Please check the transaction and verify manually");
     }
   } catch (error) {
     console.error("\n❌ ERROR: Failed to whitelist token:", error.message);
@@ -140,7 +153,9 @@ async function main() {
   console.log("\n🔗 Links:");
   console.log(`   SecureFlow: ${explorerUrl}/address/${secureFlowAddress}`);
   console.log(`   G$ Token: ${explorerUrl}/address/${GDOLLAR_CELO_ADDRESS}`);
-  console.log(`   Transaction: ${explorerUrl}/tx/${tx.hash}`);
+  if (txHash) {
+    console.log(`   Transaction: ${explorerUrl}/tx/${txHash}`);
+  }
 }
 
 main()

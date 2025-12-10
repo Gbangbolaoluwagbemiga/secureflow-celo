@@ -115,9 +115,8 @@ export default function CreateEscrowPage() {
           name: "USD Coin",
           symbol: "USDC",
         },
-        // GoodDollar (G$) - Update address once found
-        // This will be populated automatically once G$ is whitelisted
-        // or manually add the address here after finding it
+        // GoodDollar (G$) on Celo
+        // Official address: 0x62B8B11039FcfE5aB0C56E502b1C372A3d2a9c7A
         ...(CONTRACTS.GDOLLAR_CELO && CONTRACTS.GDOLLAR_CELO !== ZERO_ADDRESS
           ? {
               [CONTRACTS.GDOLLAR_CELO.toLowerCase()]: {
