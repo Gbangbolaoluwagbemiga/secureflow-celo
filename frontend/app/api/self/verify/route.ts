@@ -16,10 +16,10 @@ async function getVerifier() {
     const { SelfBackendVerifier } = await import("@selfxyz/core");
     
     // Configure allowed attestation types
-    // Attestation IDs: 1 = Electronic Passport, 2 = EU ID Card
+    // Attestation IDs: 1 = Electronic Passport, 2 = EU ID Card, 3 = (other type)
     // Use empty Map to accept all attestation types - let the mobile app choose
-    // This is more flexible and should work with any disclosure type
-    const allowedIds = new Map<number, boolean>(); // Empty = accept all
+    // SelfBackendVerifier expects Map<1 | 2 | 3, boolean> type
+    const allowedIds = new Map<1 | 2 | 3, boolean>(); // Empty = accept all
     
     verifier = new SelfBackendVerifier(
       "secureflow-identity", // Your app scope
@@ -85,6 +85,16 @@ export async function POST(request: NextRequest) {
     console.log("Content-Type:", contentType);
     console.log("Body keys:", Object.keys(body || {}));
     console.log("Body preview:", JSON.stringify(body).substring(0, 1000));
+    
+    // Enhanced disclosures logging
+    if (body.disclosures) {
+      console.log("📋 Disclosures configuration:", {
+        hasDisclosures: !!body.disclosures,
+        disclosuresType: typeof body.disclosures,
+        disclosuresLength: Array.isArray(body.disclosures) ? body.disclosures.length : 'not-array',
+        disclosures: body.disclosures
+      });
+    }
     
     // Self Protocol SDK sends data in specific format according to docs
     // Based on error logs, the structure is: { attestationId, proof, publicSignals }
