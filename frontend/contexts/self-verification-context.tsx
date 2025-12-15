@@ -74,8 +74,13 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
         userIdType: 'hex',
         version: 2,
         chainID: 42220,
+        userDefinedData: Buffer.from(JSON.stringify({ action: "identity_verification", required_age: 18 }))
+          .toString('hex')
+          .padEnd(128, '0'),
         disclosures: {
-          minimumAge: 18
+          minimumAge: 18,
+          excludedCountries: [],
+          ofac: false,
         } as any,
       }).build();
       
