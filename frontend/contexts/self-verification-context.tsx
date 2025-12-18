@@ -74,6 +74,11 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
       const scopeEnv = (process.env.NEXT_PUBLIC_SELF_SCOPE as string) || "secureflow-identity";
       const scopeAuto = endpointIsPlayground ? "self-playground" : (scopeEnv && scopeEnv !== "self-playground" ? scopeEnv : "secureflow-identity");
 
+      // Warning for conflicting configuration
+      if (endpointIsPlayground && scopeEnv && scopeEnv !== "self-playground") {
+        console.error(`[Self] CONFIGURATION MISMATCH: You have set NEXT_PUBLIC_SELF_SCOPE to '${scopeEnv}' but NEXT_PUBLIC_SELF_ENDPOINT points to the Playground. This forces the app to use 'self-playground' scope. Please DELETE the NEXT_PUBLIC_SELF_ENDPOINT environment variable in Vercel to use your custom scope.`);
+      }
+
       // Warning for common configuration issues
       if (scopeAuto.length > 30 && scopeAuto.includes("-") && !scopeAuto.includes(" ")) {
         console.warn("[Self] The provided scope looks like a UUID/Project ID. Self Protocol scopes are typically short strings (e.g., 'secureflow-app'). Ensure you are using the Scope Name, not the Project ID.");
