@@ -101,7 +101,6 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
         chainID: 42220,
         userDefinedData: "secureflow|identity_verification|age>=18",
         disclosures: disclosuresPayload,
-        attestationId: 1,
       }).build();
 
       console.log("[Self] Builder payload:", {
