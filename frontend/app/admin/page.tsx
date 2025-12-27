@@ -1327,18 +1327,35 @@ export default function AdminPage() {
           });
           break;
         case "withdraw":
-          await contract.send(
-            "withdrawStuckTokens",
-            "no-value",
-            withdrawData.token,
-            withdrawData.amount
-          );
-          toast({
-            title: "Tokens withdrawn",
-            description: `Successfully withdrew ${withdrawData.amount} tokens`,
-          });
-          setWithdrawData({ token: CONTRACTS.MOCK_ERC20, amount: "" });
-          break;
+            try {
+              // Check if amount is valid
+              if (!withdrawData.amount || isNaN(Number(withdrawData.amount))) {
+                throw new Error("Invalid amount");
+              }
+              
+              // Convert amount to wei (assuming 18 decimals for simplicity, or we could fetch decimals)
+              const amountWei = ethers.parseUnits(withdrawData.amount, 18);
+              
+              await contract.send(
+                "emergencyWithdraw",
+                "no-value",
+                withdrawData.token,
+                amountWei
+              );
+              toast({
+                title: "Tokens withdrawn",
+                description: `Successfully withdrew ${withdrawData.amount} tokens`,
+              });
+              setWithdrawData({ token: CONTRACTS.MOCK_ERC20, amount: "" });
+            } catch (err: any) {
+              console.error("Withdraw error:", err);
+              toast({
+                title: "Withdraw failed",
+                description: err.message || "Failed to withdraw tokens",
+                variant: "destructive",
+              });
+            }
+            break;
       }
 
       setDialogOpen(false);
