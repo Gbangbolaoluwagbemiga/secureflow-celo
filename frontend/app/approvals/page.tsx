@@ -9,6 +9,7 @@ import { usePendingApprovals } from "@/hooks/use-pending-approvals";
 import { useRouter } from "next/navigation";
 import { CONTRACTS } from "@/lib/web3/config";
 import { SECUREFLOW_ABI } from "@/lib/web3/abis";
+import { ethers } from "ethers";
 import {
   useNotifications,
   createApplicationNotification,
@@ -162,127 +163,56 @@ export default function ApprovalsPage() {
                           let proposedTimeline = 0;
                           let appliedAt = 0;
 
-                          // Try to extract real data from blockchain without accessing Proxy properties
-
+                          // Simplified data extraction strategy
                           try {
-                            // Strategy 1: Try to get the raw data without property access
-                            // Handle BigInt serialization by converting to string first
-                            const rawData = JSON.stringify(app, (key, value) =>
-                              typeof value === "bigint"
-                                ? value.toString()
-                                : value
-                            );
-
-                            // Try to parse the JSON data
-                            const parsedData = JSON.parse(rawData);
-
-                            // Extract from parsed data - handle nested arrays
-                            if (parsedData && Array.isArray(parsedData)) {
-                              // Check if it's a nested array (like [["address", "cover", "timeline", "timestamp", true]])
-                              if (
-                                parsedData.length === 1 &&
-                                Array.isArray(parsedData[0])
-                              ) {
-                                const appData = parsedData[0];
-                                if (appData.length >= 4) {
-                                  freelancerAddress = String(appData[0] || "");
-                                  coverLetter = String(appData[1] || "");
-                                  proposedTimeline = Number(appData[2]) || 0;
-                                  appliedAt = Number(appData[3]) || 0;
-                                } else {
-                                  throw new Error(
-                                    "Invalid nested array structure"
-                                  );
-                                }
-                              } else if (parsedData.length >= 4) {
-                                // Handle flat array
-                                freelancerAddress = String(parsedData[0] || "");
-                                coverLetter = String(parsedData[1] || "");
-                                proposedTimeline = Number(parsedData[2]) || 0;
-                                appliedAt = Number(parsedData[3]) || 0;
-                              } else {
-                                throw new Error("Invalid array structure");
-                              }
-                            } else {
-                              throw new Error("Invalid parsed data structure");
-                            }
-                          } catch (jsonError) {
-                            try {
-                              // Strategy 2: Try to access data using Object.values without property access
-                              const values = Object.values(app);
-
-                              if (values && values.length >= 4) {
-                                freelancerAddress = String(values[0] || "");
-                                coverLetter = String(values[1] || "");
-                                proposedTimeline = Number(values[2]) || 0;
-                                appliedAt = Number(values[3]) || 0;
-                              } else {
-                                throw new Error("Invalid values structure");
-                              }
-                            } catch (valuesError) {
+                            // Helper to safely access property by name or index
+                            const getVal = (obj: any, key: string, idx: number) => {
                               try {
-                                const keys = Object.keys(app);
-
-                                // Try to access properties using the keys
-                                const safeAccess = (obj: any, key: string) => {
-                                  try {
-                                    return obj[key];
-                                  } catch (e) {
-                                    return null;
-                                  }
-                                };
-
-                                freelancerAddress = String(
-                                  safeAccess(app, "0") ||
-                                    safeAccess(app, "freelancer") ||
-                                    ""
-                                );
-                                coverLetter = String(
-                                  safeAccess(app, "1") ||
-                                    safeAccess(app, "coverLetter") ||
-                                    ""
-                                );
-                                proposedTimeline = Number(
-                                  safeAccess(app, "2") ||
-                                    safeAccess(app, "proposedTimeline") ||
-                                    0
-                                );
-                                appliedAt = Number(
-                                  safeAccess(app, "3") ||
-                                    safeAccess(app, "appliedAt") ||
-                                    0
-                                );
-
-                                if (freelancerAddress && coverLetter) {
-                                } else {
-                                  throw new Error(
-                                    "Safe property access failed"
-                                  );
-                                }
-                              } catch (safeError) {
-                                throw safeError; // Re-throw to trigger fallback
+                                return obj[key] !== undefined ? obj[key] : (obj[idx] !== undefined ? obj[idx] : undefined);
+                              } catch (e) {
+                                return undefined;
                               }
-                            }
+                            };
 
-                            // If we reach here, all methods failed, use fallback
-                            if (!freelancerAddress || !coverLetter) {
-                              // Use fallback data only if all else fails
-                              const fallbackAddresses = [
-                                "0xdd946B178f96Aa4D4b21c3d089e53303D4F9012f",
-                                "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6",
-                                "0x8ba1f109551bD432803012645Hac136c",
-                              ];
+                            // Try to extract values using common Ethers.js result patterns
+                            const rawFreelancer = getVal(app, "freelancer", 0);
+                            const rawCoverLetter = getVal(app, "coverLetter", 1);
+                            const rawTimeline = getVal(app, "proposedTimeline", 2);
+                            const rawAppliedAt = getVal(app, "appliedAt", 3);
 
-                              freelancerAddress =
-                                fallbackAddresses[
-                                  appIndex % fallbackAddresses.length
-                                ];
-                              coverLetter = `Application ${
-                                appIndex + 1
-                              } - Real blockchain data could not be parsed due to Proxy object limitations. This is a fallback display.`;
-                              proposedTimeline = 30 + appIndex * 15;
-                              appliedAt = Date.now() - appIndex * 86400000;
+                            if (rawFreelancer && rawCoverLetter) {
+                                freelancerAddress = String(rawFreelancer);
+                                coverLetter = String(rawCoverLetter);
+                                proposedTimeline = Number(rawTimeline) || 0;
+                                appliedAt = Number(rawAppliedAt) || 0;
+                            } else {
+                                // Fallback for nested arrays (e.g. [[...]])
+                                const inner = Array.isArray(app) ? app[0] : undefined;
+                                if (Array.isArray(inner) && inner.length >= 4) {
+                                    freelancerAddress = String(inner[0]);
+                                    coverLetter = String(inner[1]);
+                                    proposedTimeline = Number(inner[2]);
+                                    appliedAt = Number(inner[3]);
+                                } else {
+                                     // Don't throw immediately, check if app itself is the array
+                                     if (Array.isArray(app) && app.length >= 4) {
+                                        freelancerAddress = String(app[0]);
+                                        coverLetter = String(app[1]);
+                                        proposedTimeline = Number(app[2]);
+                                        appliedAt = Number(app[3]);
+                                     } else {
+                                        throw new Error("Structure not recognized");
+                                     }
+                                }
                             }
+                          } catch (parseError) {
+                              // Last resort fallback if structured parsing fails but we have an array-like object
+                              if (app && typeof app === 'object') {
+                                  freelancerAddress = String(app[0] || app['0'] || "");
+                                  coverLetter = String(app[1] || app['1'] || "");
+                                  proposedTimeline = Number(app[2] || app['2'] || 0);
+                                  appliedAt = Number(app[3] || app['3'] || 0);
+                              }
                           }
 
                           // Ensure we have valid data
@@ -291,9 +221,9 @@ export default function ApprovalsPage() {
                             freelancerAddress === "0x" ||
                             freelancerAddress === ""
                           ) {
-                            freelancerAddress = `0x${Math.random()
-                              .toString(16)
-                              .substr(2, 40)}`;
+                            // If we still don't have an address, we can't show this application validly
+                            // But we'll use a placeholder to at least show *something* happened
+                            freelancerAddress = "0x0000000000000000000000000000000000000000"; 
                           }
                           if (
                             !coverLetter ||
@@ -508,8 +438,11 @@ export default function ApprovalsPage() {
       setSelectedFreelancer(null);
       setSelectedJobForApproval(null);
 
-      // Wait a moment for the transaction to be processed
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Wait for transaction confirmation
+      if (txHash && typeof window !== 'undefined' && window.ethereum) {
+          const provider = new ethers.BrowserProvider(window.ethereum as any);
+          await provider.waitForTransaction(txHash);
+      }
 
       // Refresh the jobs list
       await fetchMyJobs();

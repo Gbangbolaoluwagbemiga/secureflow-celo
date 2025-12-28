@@ -6,6 +6,7 @@ import { useWeb3 } from "@/contexts/web3-context";
 import { useToast } from "@/hooks/use-toast";
 import { CONTRACTS } from "@/lib/web3/config";
 import { SECUREFLOW_ABI } from "@/lib/web3/abis";
+import { ethers } from "ethers";
 import {
   useNotifications,
   createApplicationNotification,
@@ -241,30 +242,17 @@ export default function JobsPage() {
                     wallet.address
                   );
 
-                  // Handle different possible return types - be more strict about what counts as "applied"
-                  if (
-                    hasAppliedResult &&
-                    typeof hasAppliedResult === "object"
-                  ) {
-                    // Handle Proxy(Result) objects
-                    try {
-                      const resultValue =
-                        hasAppliedResult[0] || hasAppliedResult.toString();
-                      userHasApplied =
-                        resultValue === true ||
-                        resultValue === "true" ||
-                        resultValue === 1 ||
-                        resultValue === "1";
-                    } catch (e) {
-                      userHasApplied = false;
-                    }
-                  } else {
-                    userHasApplied =
-                      hasAppliedResult === true ||
-                      hasAppliedResult === "true" ||
-                      hasAppliedResult === 1;
+                  // Simplified check for boolean or [boolean] result
+                  if (typeof hasAppliedResult === 'boolean') {
+                      userHasApplied = hasAppliedResult;
+                  } else if (Array.isArray(hasAppliedResult) && hasAppliedResult.length > 0) {
+                      userHasApplied = Boolean(hasAppliedResult[0]);
+                  } else if (typeof hasAppliedResult === 'object' && hasAppliedResult !== null) {
+                      // Handle potential Proxy or object wrapper
+                      const val = (hasAppliedResult as any)[0];
+                      userHasApplied = Boolean(val);
                   }
-
+                  
                   // Update the hasApplied state for this job
                   setHasApplied((prev) => ({
                     ...prev,
@@ -274,34 +262,20 @@ export default function JobsPage() {
                   // If hasUserApplied returned false, try to double-check with applications list
                   if (!userHasApplied) {
                     try {
-                      // Try to get applications with a smaller limit first
-                      let applications = null;
-                      try {
-                        applications = await contract.call(
+                      const applications = await contract.call(
                           "getApplicationsPage",
                           i, // escrowId
                           0, // offset
-                          1 // limit - start with 1
-                        );
-                      } catch (error1) {
-                        try {
-                          applications = await contract.call(
-                            "getApplicationsPage",
-                            i, // escrowId
-                            0, // offset
-                            10 // limit - try 10
-                          );
-                        } catch (error2) {
-                          throw error2;
-                        }
-                      }
+                          50 // limit - check first 50
+                      );
 
                       if (applications && Array.isArray(applications)) {
                         const userInApplications = applications.some(
-                          (app: any) =>
-                            app.freelancer &&
-                            app.freelancer.toLowerCase() ===
-                              wallet.address?.toLowerCase()
+                          (app: any) => {
+                             // Handle various application structures
+                             const addr = app.freelancer || (Array.isArray(app) ? app[0] : undefined);
+                             return addr && addr.toLowerCase() === wallet.address?.toLowerCase();
+                          }
                         );
 
                         if (userInApplications) {
@@ -497,13 +471,28 @@ export default function JobsPage() {
       }
 
       // Call the smart contract applyToJob function
-      await contract.send(
+      const txHash = await contract.send(
         "applyToJob",
         "no-value",
         job.id,
         coverLetter,
         proposedTimeline
       );
+
+      toast({
+        title: "Transaction Sent",
+        description: "Waiting for confirmation...",
+      });
+
+      // Wait for transaction confirmation
+      if (txHash && typeof window !== 'undefined' && window.ethereum) {
+          const provider = new ethers.BrowserProvider(window.ethereum as any);
+          const receipt = await provider.waitForTransaction(txHash);
+          
+          if (receipt && receipt.status === 0) {
+              throw new Error("Transaction failed on-chain");
+          }
+      }
 
       toast({
         title: "Application Submitted!",
