@@ -70,7 +70,7 @@ export function SmartAccountProvider({ children }: { children: ReactNode }) {
         throw new Error("MetaMask not found");
       }
 
-      const provider = new ethers.BrowserProvider(window.ethereum);
+      const provider = new ethers.BrowserProvider(window.ethereum as any);
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
 
@@ -158,7 +158,7 @@ export function SmartAccountProvider({ children }: { children: ReactNode }) {
       });
 
       const { ethers } = await import("ethers");
-      const provider = new ethers.BrowserProvider(window.ethereum!);
+      const provider = new ethers.BrowserProvider(window.ethereum as any);
       const signer = await provider.getSigner();
 
       // Check Paymaster contract balance
@@ -355,7 +355,7 @@ export function SmartAccountProvider({ children }: { children: ReactNode }) {
       }
 
       const { ethers } = await import("ethers");
-      const provider = new ethers.BrowserProvider(window.ethereum!);
+      const provider = new ethers.BrowserProvider(window.ethereum as any);
       const signer = await provider.getSigner();
 
       // Check Paymaster contract balance
@@ -458,7 +458,7 @@ export function SmartAccountProvider({ children }: { children: ReactNode }) {
   const checkSmartAccountBalance = async () => {
     if (smartAccount.safeAddress) {
       try {
-        const provider = new ethers.BrowserProvider(window.ethereum!);
+        const provider = new ethers.BrowserProvider(window.ethereum as any);
         const balance = await provider.getBalance(smartAccount.safeAddress);
         const balanceInEther = ethers.formatEther(balance);
         setSmartAccount((prev) => ({ ...prev, balance: balanceInEther }));

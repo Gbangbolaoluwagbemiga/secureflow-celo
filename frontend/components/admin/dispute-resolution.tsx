@@ -248,13 +248,15 @@ export function DisputeResolution({
 
       while (attempts < maxAttempts) {
         try {
-          receipt = await window.ethereum.request({
-            method: "eth_getTransactionReceipt",
-            params: [txHash],
-          });
+          if (typeof window !== "undefined" && window.ethereum) {
+            receipt = await (window.ethereum as any).request({
+              method: "eth_getTransactionReceipt",
+              params: [txHash],
+            });
 
-          if (receipt) {
-            break;
+            if (receipt) {
+              break;
+            }
           }
         } catch (error) {
           console.error("Error checking transaction receipt:", error);

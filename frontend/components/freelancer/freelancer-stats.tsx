@@ -192,7 +192,7 @@ export function FreelancerStats({
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {getBadgeTierName(badgeTier)}
+            {getBadgeTierName(badgeTier ?? null)}
           </div>
           <p className="text-xs text-muted-foreground">
             {badgeTier === 2
