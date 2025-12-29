@@ -38,6 +38,7 @@ interface JobWithApplications {
   createdAt: number;
   duration: number;
   milestones: any[];
+  projectTitle?: string;
   projectDescription?: string;
   isOpenJob?: boolean;
   applications: Application[];
@@ -128,7 +129,9 @@ export function JobCard({
               </DialogTrigger>
               <DialogContent className="glass max-w-4xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Job #{job.id} Applications</DialogTitle>
+                  <DialogTitle>
+                    {job.projectTitle || `Job #${job.id}`} Applications
+                  </DialogTitle>
                   <DialogDescription>
                     Review and approve freelancer applications for this job.
                   </DialogDescription>

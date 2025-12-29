@@ -42,13 +42,21 @@ export function ApplicationCard({
             </span>
 
             {/* Verification Status */}
-            {application.isVerified && (
+            {application.isVerified ? (
               <Badge
                 variant="secondary"
                 className="text-xs bg-green-100 text-green-800 border-green-300 gap-1"
               >
                 <Shield className="h-3 w-3 fill-green-500 text-green-500" />
                 Verified
+              </Badge>
+            ) : (
+              <Badge
+                variant="outline"
+                className="text-xs bg-gray-100 text-gray-500 border-gray-300 gap-1"
+              >
+                <ShieldAlert className="h-3 w-3 text-gray-400" />
+                Not Verified
               </Badge>
             )}
 
