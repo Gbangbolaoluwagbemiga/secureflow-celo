@@ -17,7 +17,7 @@ async function main() {
   const currentAddress = await secureFlow.engagementRewards();
   console.log("\nCurrent Configured Engagement Rewards Address:", currentAddress);
   
-  const EXPECTED = "0xb44fC3A592aDaA257AECe1Ae8956019EA53d0465";
+  const EXPECTED = "0x25db74CF4E7BA120526fd87e159CF656d94bAE43";
   if (currentAddress.toLowerCase() === EXPECTED.toLowerCase()) {
       console.log("✅ Configuration matches expected address!");
   } else {
