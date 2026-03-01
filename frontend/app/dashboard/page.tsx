@@ -33,6 +33,7 @@ import {
   type FilterStatus,
   type SortOption,
 } from "@/components/dashboard/filter-sort-controls";
+import { GoodWalletConnect } from "@/components/gooddollar/goodwallet-connect";
 
 export default function DashboardPage() {
   const { wallet, getContract } = useWeb3();
@@ -1357,6 +1358,12 @@ export default function DashboardPage() {
           onRefresh={handleRefresh}
           isRefreshing={isRefreshing}
         />
+        
+        {/* GoodDollar Connect Integration */}
+        <div className="mb-8">
+          <GoodWalletConnect />
+        </div>
+
         <DashboardStats escrows={escrows} />
 
         {escrows.length === 0 ? (
