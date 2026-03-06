@@ -16,15 +16,31 @@ export function GoodWalletConnect() {
   const [isComponentReady, setIsComponentReady] = useState(false);
 
   useEffect(() => {
-    // Inject config when component is defined
+    // Pre-register Fuse Network with the wallet so claim-button can switch to it
+    if (typeof window !== "undefined" && window.ethereum) {
+      (window.ethereum as any).request({
+        method: "wallet_addEthereumChain",
+        params: [{
+          chainId: "0x7a", // 122 in hex = Fuse Network
+          chainName: "Fuse Network",
+          nativeCurrency: { name: "Fuse", symbol: "FUSE", decimals: 18 },
+          rpcUrls: ["https://rpc.fuse.io"],
+          blockExplorerUrls: ["https://explorer.fuse.io"],
+        }],
+      }).catch(() => {
+        // Silently ignore if wallet doesn't support addEthereumChain
+      });
+    }
+
+    // Inject config when claim-button component is defined
     customElements.whenDefined("claim-button").then(() => {
       setIsComponentReady(true);
       const claimBtns = document.querySelectorAll("claim-button");
       claimBtns.forEach(btn => {
-         (btn as any).appkitConfig = {
-           projectId,
-           metadata
-         };
+        (btn as any).appkitConfig = {
+          projectId,
+          metadata
+        };
       });
     });
   }, []);
@@ -43,7 +59,7 @@ export function GoodWalletConnect() {
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <p className="text-sm text-muted-foreground">
-            GoodWallet is a multi-chain wallet that supports G$ (GoodDollar) tokens on Celo. 
+            GoodWallet is a multi-chain wallet that supports G$ (GoodDollar) tokens on Celo.
             Use it to:
           </p>
           <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
@@ -62,8 +78,8 @@ export function GoodWalletConnect() {
 
         {/* GoodDollar Claim Button Integration */}
         <div className="my-4 flex justify-center bg-gray-50 p-4 rounded-lg border border-gray-100">
-           {/* @ts-ignore */}
-           <claim-button environment="production" />
+          {/* @ts-ignore */}
+          <claim-button environment="production" />
         </div>
 
         <div className="flex gap-2 pt-2">
