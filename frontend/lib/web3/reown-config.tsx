@@ -14,8 +14,8 @@ export const projectId =
 export const metadata = {
   name: "SecureFlow",
   description: "Secure Escrow Platform for Freelancers",
-  url: typeof window !== "undefined" 
-    ? window.location.origin 
+  url: typeof window !== "undefined"
+    ? window.location.origin
     : process.env.NEXT_PUBLIC_APP_URL || "https://secureflow.app",
   icons: ["/secureflow-logo.svg"],
 };
@@ -30,16 +30,23 @@ const networks = [
     rpcUrl: "https://forno.celo.org",
   },
   {
+    id: 122,
+    name: "Fuse Network",
+    currency: "FUSE",
+    explorerUrl: "https://explorer.fuse.io",
+    rpcUrl: "https://rpc.fuse.io",
+  },
+  {
     id: 84532,
     name: "Base Sepolia Testnet",
-    currency: "CELO",
+    currency: "ETH",
     explorerUrl: "https://sepolia.basescan.org",
     rpcUrl: "https://sepolia.base.org",
   },
   {
     id: 8453,
     name: "Base",
-    currency: "CELO",
+    currency: "ETH",
     explorerUrl: "https://basescan.org",
     rpcUrl: "https://mainnet.base.org",
   },

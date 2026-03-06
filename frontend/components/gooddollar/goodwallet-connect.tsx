@@ -8,6 +8,7 @@ import { useWeb3 } from "@/contexts/web3-context";
 import { useToast } from "@/hooks/use-toast";
 import { GDOLLARBalance } from "./gdollar-balance";
 import { projectId, metadata } from "@/lib/web3/reown-config";
+import { useAppKit } from "@reown/appkit/react";
 
 // Import the web component
 import "@goodsdks/ui-components";
@@ -17,39 +18,16 @@ export function GoodWalletConnect() {
   const { toast } = useToast();
   const [isComponentReady, setIsComponentReady] = useState(false);
 
-  const addFuseChain = async () => {
-    if (typeof window !== "undefined" && window.ethereum) {
-      try {
-        await (window.ethereum as any).request({
-          method: "wallet_addEthereumChain",
-          params: [{
-            chainId: "0x7a", // 122 in hex = Fuse Network
-            chainName: "Fuse Network",
-            nativeCurrency: { name: "Fuse", symbol: "FUSE", decimals: 18 },
-            rpcUrls: ["https://rpc.fuse.io", "https://fuse-mainnet.chainstacklabs.com"],
-            blockExplorerUrls: ["https://explorer.fuse.io"],
-          }],
-        });
-        toast({
-          title: "Network Added",
-          description: "Fuse Network has been added to your wallet.",
-        });
-      } catch (err: any) {
-        console.warn("Fuse Chain registration warning:", err);
-        if (err.code !== 4001) { // Not a user rejection
-          toast({
-            title: "Network Error",
-            description: "Failed to add Fuse network. Please add it manually.",
-            variant: "destructive",
-          });
-        }
-      }
-    }
+  const { open } = useAppKit();
+
+  const handleFixNetwork = () => {
+    // Open the AppKit networks modal to let the user select Fuse directly.
+    // This is more reliable than window.ethereum across different wallet types (like WalletConnect).
+    open({ view: 'Networks' });
   };
 
   useEffect(() => {
-    // Pre-register Fuse Network with the wallet so claim-button can switch to it
-    addFuseChain();
+    // We rely on the reown-config.tsx networks array to inform the wallet about Fuse natively now.
 
     // Mark as ready once the web component is defined
     if (typeof customElements !== "undefined") {
@@ -135,8 +113,8 @@ export function GoodWalletConnect() {
           </Button>
           <Button
             variant="outline"
-            onClick={addFuseChain}
-            title="Fix Fuse Network connection"
+            onClick={handleFixNetwork}
+            title="Open Network Switcher"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             Fix Network
