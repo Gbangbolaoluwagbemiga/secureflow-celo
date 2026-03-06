@@ -1,7 +1,6 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useRef, useMemo, useCallback, ReactNode } from "react";
-import { SelfQRcodeWrapper, SelfAppBuilder } from "@selfxyz/qrcode";
 import { ethers } from "ethers";
 import { useWeb3 } from "@/contexts/web3-context";
 import { useToast } from "@/hooks/use-toast";
@@ -32,83 +31,89 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const hasStartedVerificationRef = useRef(false);
 
-  // Initialize Self App on mount
+  // Build selfApp dynamically using @selfxyz/qrcode (loaded at runtime)
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return; // Skip on server-side
-    }
-
-    // Skip Self Protocol initialization on localhost (not supported)
-    const isLocalhost = window.location.hostname === "localhost" || 
-                       window.location.hostname === "127.0.0.1" ||
-                       window.location.hostname === "";
-    
-    if (isLocalhost) {
-      console.warn("Self Protocol is disabled on localhost. It will work in production.");
-      return;
-    }
-
-    // Only initialize if wallet is connected with a valid address
-    // Self Protocol requires a valid address (not zero address) or UUID
-    if (!wallet.isConnected || !wallet.address) {
-      // Don't initialize until wallet is connected
-      setSelfApp(null);
-      return;
-    }
-
-    // Validate address format
-    if (!ethers.isAddress(wallet.address) || wallet.address === ethers.ZeroAddress) {
-      console.warn("Invalid wallet address for Self Protocol:", wallet.address);
-      setSelfApp(null);
-      return;
-    }
-
-    try {
-      const hostname = window.location.hostname || "";
-      const endpointOverride = (process.env.NEXT_PUBLIC_SELF_ENDPOINT as string) || `${window.location.origin}/api/self/verify`;
-      const endpointIsPlayground = endpointOverride.includes("playground.self.xyz");
-      const endpointTypeEnv = process.env.NEXT_PUBLIC_SELF_ENDPOINT_TYPE as any;
-      const autoEndpointType = endpointIsPlayground ? "https" : (endpointTypeEnv ?? (hostname.endsWith("vercel.app") ? "staging_https" : "https"));
-      const devModeAuto = endpointIsPlayground ? false : (typeof autoEndpointType === "string" && autoEndpointType.includes("staging"));
-      const scopeEnv = (process.env.NEXT_PUBLIC_SELF_SCOPE as string) || "";
-      const scopeAuto = endpointIsPlayground ? "self-playground" : (scopeEnv && scopeEnv !== "self-playground" ? scopeEnv : "secureflow-identity");
-
-      const disclosuresPayload = {
-        minimumAge: 18,
-      };
-
-      const app = new SelfAppBuilder({
-        appName: "SecureFlow",
-        logoBase64: `${window.location.origin}/secureflow-logo.svg`,
-        endpointType: autoEndpointType,
-        endpoint: endpointOverride,
-        scope: scopeAuto,
-        userId: wallet.address.toLowerCase(),
-        userIdType: 'hex',
-        devMode: devModeAuto,
-        version: 2,
-        chainID: 42220,
-        userDefinedData: `SecureFlow Verification - ${wallet.address.toLowerCase()}`,
-        disclosures: disclosuresPayload as any,
-      }).build();
-
-      console.log("[Self] Builder payload:", {
-        endpointType: autoEndpointType,
-        devMode: devModeAuto,
-        endpoint: endpointOverride,
-        scope: scopeAuto,
-        userId: wallet.address.toLowerCase(),
-        disclosures: disclosuresPayload,
-      });
-
-      setSelfApp(app);
-    } catch (error: any) {
-      console.error("Self Protocol initialization error:", error);
-      if (error.message && !error.message.includes("construct")) {
-        console.error("Self Protocol initialization error details:", error);
+    const init = async () => {
+      if (typeof window === "undefined") {
+        return; // Skip on server-side
       }
-      setSelfApp(null);
-    }
+
+      // Skip Self Protocol initialization on localhost (not supported)
+      const isLocalhost = window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1" ||
+        window.location.hostname === "";
+
+      if (isLocalhost) {
+        console.warn("Self Protocol is disabled on localhost. It will work in production.");
+        return;
+      }
+
+      // Only initialize if wallet is connected with a valid address
+      // Self Protocol requires a valid address (not zero address) or UUID
+      if (!wallet.isConnected || !wallet.address) {
+        // Don't initialize until wallet is connected
+        setSelfApp(null);
+        return;
+      }
+
+      // Validate address format
+      if (!ethers.isAddress(wallet.address) || wallet.address === ethers.ZeroAddress) {
+        console.warn("Invalid wallet address for Self Protocol:", wallet.address);
+        setSelfApp(null);
+        return;
+      }
+
+      try {
+        // Dynamically import to avoid build-time SSH dep issues
+        const mod = await import("@selfxyz/qrcode" as any);
+        const SelfAppBuilder = mod.SelfAppBuilder;
+        const hostname = window.location.hostname || "";
+        const endpointOverride = (process.env.NEXT_PUBLIC_SELF_ENDPOINT as string) || `${window.location.origin}/api/self/verify`;
+        const endpointIsPlayground = endpointOverride.includes("playground.self.xyz");
+        const endpointTypeEnv = process.env.NEXT_PUBLIC_SELF_ENDPOINT_TYPE as any;
+        const autoEndpointType = endpointIsPlayground ? "https" : (endpointTypeEnv ?? (hostname.endsWith("vercel.app") ? "staging_https" : "https"));
+        const devModeAuto = endpointIsPlayground ? false : (typeof autoEndpointType === "string" && autoEndpointType.includes("staging"));
+        const scopeEnv = (process.env.NEXT_PUBLIC_SELF_SCOPE as string) || "";
+        const scopeAuto = endpointIsPlayground ? "self-playground" : (scopeEnv && scopeEnv !== "self-playground" ? scopeEnv : "secureflow-identity");
+
+        const disclosuresPayload = {
+          minimumAge: 18,
+        };
+
+        const app = new SelfAppBuilder({
+          appName: "SecureFlow",
+          logoBase64: `${window.location.origin}/secureflow-logo.svg`,
+          endpointType: autoEndpointType,
+          endpoint: endpointOverride,
+          scope: scopeAuto,
+          userId: wallet.address.toLowerCase(),
+          userIdType: 'hex',
+          devMode: devModeAuto,
+          version: 2,
+          chainID: 42220,
+          userDefinedData: `SecureFlow Verification - ${wallet.address.toLowerCase()}`,
+          disclosures: disclosuresPayload as any,
+        }).build();
+
+        console.log("[Self] Builder payload:", {
+          endpointType: autoEndpointType,
+          devMode: devModeAuto,
+          endpoint: endpointOverride,
+          scope: scopeAuto,
+          userId: wallet.address.toLowerCase(),
+          disclosures: disclosuresPayload,
+        });
+
+        setSelfApp(app);
+      } catch (error: any) {
+        console.error("Self Protocol initialization error:", error);
+        if (error.message && !error.message.includes("construct")) {
+          console.error("Self Protocol initialization error details:", error);
+        }
+        setSelfApp(null);
+      }
+    }; // end init
+    init();
   }, [wallet.address, wallet.isConnected]);
 
   // Check verification status from contract (only updates state if changed)
@@ -119,7 +124,7 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
       }
       return false;
     }
-    
+
     // If verification is not available, skip
     if (verificationAvailable === false) {
       return false;
@@ -133,7 +138,7 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
           const cachedData = JSON.parse(cached);
           const cachedVerified = cachedData.verified;
           const cachedTimestamp = cachedData.timestamp;
-          
+
           // Only update state if value changed
           if (!skipStateUpdate) {
             setIsVerified(cachedVerified);
@@ -158,7 +163,7 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
 
         const isVerifiedValue = Boolean(verified);
         const timestampValue = timestamp ? Number(timestamp) : null;
-        
+
         // Only update state if value changed or not skipping
         if (!skipStateUpdate) {
           setIsVerified(isVerifiedValue);
@@ -176,7 +181,7 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
             );
           }
         }
-        
+
         return isVerifiedValue;
       } catch (callError: any) {
         // Function doesn't exist or contract doesn't support it
@@ -256,20 +261,20 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
         }
 
         attempts++;
-        
+
         // Check verification status (skip state update during polling to prevent re-renders)
         const isNowVerified = await checkVerificationStatus(true);
-        
+
         // Only update state if verification is complete
         if (isNowVerified) {
           // Get fresh timestamp
           try {
             const contract = getContract(CONTRACTS.SECUREFLOW_ESCROW, SECUREFLOW_ABI);
             const timestamp = await contract.call("verificationTimestamp", wallet.address);
-            
+
             setIsVerified(true);
             setVerificationTimestamp(timestamp ? Number(timestamp) : null);
-            
+
             // Cache the result
             if (typeof window !== "undefined" && wallet.address) {
               localStorage.setItem(
@@ -280,7 +285,7 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
                 })
               );
             }
-            
+
             stopPolling();
             toast({
               title: "Verification successful",
@@ -355,20 +360,20 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
       typeof reason === "string" && reason.includes("Unsupported number of inputs")
         ? "This usually means the Self app has no document loaded for staging. Add a mock passport in the Self app settings and retry."
         : (typeof reason === "string" && reason.includes("Config not found"))
-        ? "Ensure scope and endpoint type match. Use self-playground only with the Playground endpoint; use secureflow-identity with your own HTTPS endpoint."
-        : (isStaging && (reason === "error" || (typeof reason === "string" && reason.toLowerCase() === "error")))
-        ? "On staging, ensure you have a mock passport set up in the Self mobile app before scanning the QR."
-        : (!isStaging && isPlayground && (reason === "error" || (typeof reason === "string" && reason.toLowerCase() === "error")))
-        ? "On Playground (production), ensure you are using a real NFC passport in the Self mobile app."
-        : undefined;
+          ? "Ensure scope and endpoint type match. Use self-playground only with the Playground endpoint; use secureflow-identity with your own HTTPS endpoint."
+          : (isStaging && (reason === "error" || (typeof reason === "string" && reason.toLowerCase() === "error")))
+            ? "On staging, ensure you have a mock passport set up in the Self mobile app before scanning the QR."
+            : (!isStaging && isPlayground && (reason === "error" || (typeof reason === "string" && reason.toLowerCase() === "error")))
+              ? "On Playground (production), ensure you are using a real NFC passport in the Self mobile app."
+              : undefined;
     toast({
       title: "Verification error",
-        description:
+      description:
         hint
           ? `${reason}. ${hint}`
           : typeof reason === "string"
-          ? reason
-          : "Verification failed. Ensure your Self app has a valid NFC passport (production) or a mock passport (staging) and try again.",
+            ? reason
+            : "Verification failed. Ensure your Self app has a valid NFC passport (production) or a mock passport (staging) and try again.",
       variant: "destructive",
     });
   }, []);
@@ -378,10 +383,10 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
     // Return a memoized component that only re-renders when selfApp changes
     const Component = () => {
       // Check if we're on localhost
-      const isLocalhost = typeof window !== "undefined" && 
-        (window.location.hostname === "localhost" || 
-         window.location.hostname === "127.0.0.1" ||
-         window.location.hostname === "");
+      const isLocalhost = typeof window !== "undefined" &&
+        (window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1" ||
+          window.location.hostname === "");
 
       if (isLocalhost) {
         return (
@@ -400,14 +405,18 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
         );
       }
 
+      const LazyQRCode = ({ app, onSuccess, onError }: any) => {
+        const [QRComp, setQRComp] = React.useState<any>(null);
+        React.useEffect(() => {
+          import("@selfxyz/qrcode" as any).then((mod) => setQRComp(() => mod.SelfQRcodeWrapper));
+        }, []);
+        if (!QRComp) return <div className="p-4 text-center text-sm text-muted-foreground">Loading QR code...</div>;
+        return <QRComp selfApp={app} onSuccess={onSuccess} onError={onError} />;
+      };
+
       return (
         <div className="flex flex-col items-center gap-4 p-6">
-          <SelfQRcodeWrapper 
-            key={wallet.address || 'default'} // Stable key to prevent unnecessary remounts
-            selfApp={selfApp}
-            onSuccess={handleQRSuccess}
-            onError={handleQRError}
-          />
+          <LazyQRCode app={selfApp} onSuccess={handleQRSuccess} onError={handleQRError} />
           <div className="text-sm text-muted-foreground text-center max-w-md space-y-2">
             <p>
               Scan this QR code with the Self mobile app to verify your identity.

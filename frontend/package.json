@@ -43,8 +43,6 @@
     "@radix-ui/react-tooltip": "1.1.6",
     "@reown/appkit": "^1.8.11",
     "@reown/appkit-adapter-ethers": "^1.8.11",
-    "@selfxyz/core": "^1.1.0-beta.7",
-    "@selfxyz/qrcode": "^1.0.17",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "1.0.4",
