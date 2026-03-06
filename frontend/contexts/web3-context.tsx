@@ -51,16 +51,16 @@ export function Web3Provider({ children }: { children: ReactNode }) {
   // Helper to check if Celo network exists in wallet
   const checkCeloNetworkExists = async (): Promise<boolean> => {
     if (typeof window === "undefined" || !window.ethereum) return false;
-    
+
     try {
       const provider = window.ethereum as unknown as Eip1193Provider;
       const chainId = await provider.request({ method: "eth_chainId" });
       const chainIdNumber = Number.parseInt(chainId, 16);
       const targetChainId = Number.parseInt(CELO_MAINNET.chainId, 16);
-      
+
       // If already on Celo, network exists
       if (chainIdNumber === targetChainId) return true;
-      
+
       // Try to switch - if it fails with 4902, network doesn't exist
       // We catch the error to check the code without actually switching
       try {
@@ -90,7 +90,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
       if (!provider && (window as any).ethereum?.providers) {
         provider = (window as any).ethereum.providers?.[0] || (window as any).ethereum;
       }
-      
+
       if (provider) {
         const balance = await provider.request({
           method: "eth_getBalance",
@@ -118,9 +118,12 @@ export function Web3Provider({ children }: { children: ReactNode }) {
     if (appKitConnected && appKitAddress) {
       const chainIdNumber = appKitChainId ? Number(appKitChainId) : null;
       const targetChainId = Number.parseInt(CELO_MAINNET.chainId, 16);
-      
+
+      // Support both Celo and Fuse (122) so the dashboard doesn't disappear when claiming G$
+      const isSupportedNetwork = chainIdNumber === targetChainId || chainIdNumber === 122;
+
       // Update wallet state from AppKit
-      if (chainIdNumber === targetChainId) {
+      if (isSupportedNetwork) {
         // Fetch balance and update state
         fetchBalance(appKitAddress).then((balance) => {
           setWallet({
@@ -132,18 +135,19 @@ export function Web3Provider({ children }: { children: ReactNode }) {
           checkOwnerStatus(appKitAddress);
         });
       } else {
-        // Connected but wrong network
+        // Connected to an unsupported network, but we still consider it "connected"
+        // so the UI doesn't completely break, we just show 0 balance.
         setWallet({
           address: appKitAddress,
           chainId: chainIdNumber,
-          isConnected: false, // Mark as not connected if on wrong network
+          isConnected: true, // Keep them connected so Dashboard renders
           balance: "0",
         });
-        
-        // Show helpful message
+
+        // Only show helpful message if it's completely unsupported
         toast({
-          title: "Wrong Network",
-          description: "Please switch to Celo Mainnet or add it if it's not in your wallet.",
+          title: "Unsupported Network",
+          description: "Please switch back to Celo Mainnet for SecureFlow functions.",
           variant: "destructive",
         });
       }
@@ -227,14 +231,17 @@ export function Web3Provider({ children }: { children: ReactNode }) {
         const chainIdNumber = Number.parseInt(chainId, 16);
         const targetChainId = Number.parseInt(CELO_MAINNET.chainId, 16);
 
-        // If on wrong network, try to switch automatically (but only once per session)
-        if (chainIdNumber !== targetChainId) {
-          // Don't auto-switch in checkConnection to avoid spam
-          // User should manually connect via connectWallet which will handle the switch
+        // Support both Celo and Fuse (122)
+        const isSupportedNetwork = chainIdNumber === targetChainId || chainIdNumber === 122;
+
+        // Keep them connected regardless of network so the dashboard doesn't disappear
+        if (!isSupportedNetwork) {
+          // They are on a random network, we still render the dashboard
+          // but don't fetch a Celo balance using this provider
           setWallet({
             address: accounts[0],
             chainId: chainIdNumber,
-            isConnected: false, // Mark as not connected if on wrong network
+            isConnected: true,
             balance: "0",
           });
           return;
@@ -420,7 +427,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
     } catch (error: any) {
       // Check if error is related to network not being available
       const errorMessage = error.message?.toLowerCase() || "";
-      const isNetworkError = 
+      const isNetworkError =
         error.code === 4902 ||
         errorMessage.includes("network") ||
         errorMessage.includes("chain") ||
@@ -567,7 +574,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
       return true;
     } catch (error: any) {
       console.error("Failed to add Celo network:", error);
-      
+
       if (error.code === 4001) {
         toast({
           title: "Request cancelled",
@@ -662,7 +669,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
     let targetAddress = address;
     try {
       targetAddress = ethers.getAddress(address.toLowerCase());
-    } catch {}
+    } catch { }
 
     return {
       async call(method: string, ...args: any[]) {
@@ -703,7 +710,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
       async send(method: string, value: string = "0x0", ...args: any[]) {
         try {
           const provider = window.ethereum as unknown as Eip1193Provider;
-          
+
           // First, ensure we're on the correct network
           const currentChainId = await provider.request({
             method: "eth_chainId",
