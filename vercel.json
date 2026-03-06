@@ -1,11 +1,9 @@
 {
   "version": 2,
-  "buildCommand": "cd frontend && yarn install && yarn build",
-  "outputDirectory": "frontend/.next",
-  "installCommand": "cd frontend && yarn install",
-  "framework": null,
-  "devCommand": "cd frontend && npm run dev",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./frontend/",
+  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
   "env": {
     "NEXT_TELEMETRY_DISABLED": "1"
   },
