@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "cd frontend && npm install --legacy-peer-deps && npm run build",
+  "buildCommand": "cd frontend && yarn install && yarn build",
   "outputDirectory": "frontend/.next",
-  "installCommand": "cd frontend && npm install --legacy-peer-deps",
+  "installCommand": "cd frontend && yarn install",
   "framework": null,
   "devCommand": "cd frontend && npm run dev",
   "ignoreCommand": "git diff --quiet HEAD^ HEAD ./frontend/",
