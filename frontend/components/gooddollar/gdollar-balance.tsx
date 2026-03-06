@@ -6,7 +6,7 @@ import { CONTRACTS } from "@/lib/web3/config";
 import { ERC20_ABI } from "@/lib/web3/abis";
 import { ethers } from "ethers";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Wallet } from "lucide-react";
+import { ExternalLink, Wallet, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface GDOLLARBalanceProps {
@@ -18,19 +18,20 @@ export function GDOLLARBalance({ showClaimButton = true, compact = false }: GDOL
   const { wallet, getContract } = useWeb3();
   const [balance, setBalance] = useState<string>("0");
   const [loading, setLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const GDOLLAR_ADDRESS = CONTRACTS.GDOLLAR_CELO;
 
   useEffect(() => {
-    if (!wallet.isConnected || !wallet.address || !GDOLLAR_ADDRESS || 
-        GDOLLAR_ADDRESS === "0x0000000000000000000000000000000000000000") {
+    if (!wallet.isConnected || !wallet.address || !GDOLLAR_ADDRESS ||
+      GDOLLAR_ADDRESS === "0x0000000000000000000000000000000000000000") {
       setBalance("0");
       return;
     }
 
-    const fetchBalance = async () => {
-      setLoading(true);
+    const fetchBalance = async (showLoading = true) => {
+      if (showLoading) setLoading(true);
       setError(null);
       try {
         const contract = getContract(GDOLLAR_ADDRESS, ERC20_ABI);
@@ -42,25 +43,51 @@ export function GDOLLARBalance({ showClaimButton = true, compact = false }: GDOL
         setError("Failed to load balance");
         setBalance("0");
       } finally {
-        setLoading(false);
+        if (showLoading) setLoading(false);
+        setIsInitialLoading(false);
       }
     };
 
     fetchBalance();
-    
-    // Refresh balance every 30 seconds
-    const interval = setInterval(fetchBalance, 30000);
-    return () => clearInterval(interval);
+
+    // Auto-refresh removed per user request for stability
+    // Balance can be refreshed manually
   }, [wallet.address, wallet.isConnected, GDOLLAR_ADDRESS, getContract]);
+
+  const handleManualRefresh = async () => {
+    if (!wallet.isConnected || !wallet.address || !GDOLLAR_ADDRESS) return;
+
+    setLoading(true);
+    setError(null);
+    try {
+      const contract = getContract(GDOLLAR_ADDRESS, ERC20_ABI);
+      const balanceWei = await contract.call("balanceOf", wallet.address);
+      const formattedBalance = ethers.formatEther(balanceWei);
+      setBalance(parseFloat(formattedBalance).toFixed(4));
+    } catch (err: any) {
+      console.error("Manual refresh failed:", err);
+      setError("Refresh failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (compact) {
     return (
       <div className="flex items-center gap-2 text-sm">
         <Wallet className="h-4 w-4 text-muted-foreground" />
         <span className="font-medium">G$</span>
-        <span className={loading ? "text-muted-foreground" : ""}>
-          {loading ? "..." : balance}
+        <span className={loading ? "text-muted-foreground animate-pulse" : ""}>
+          {isInitialLoading && loading ? "..." : balance}
         </span>
+        <button
+          onClick={handleManualRefresh}
+          disabled={loading}
+          className={`p-1 hover:bg-gray-100 rounded-full transition-all ${loading ? 'animate-spin' : ''}`}
+          title="Refresh Balance"
+        >
+          <RefreshCw className="h-3 w-3 text-muted-foreground" />
+        </button>
       </div>
     );
   }
@@ -77,9 +104,22 @@ export function GDOLLARBalance({ showClaimButton = true, compact = false }: GDOL
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-bold">{loading ? "..." : balance}</span>
-          <span className="text-xl text-muted-foreground">G$</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-bold">
+              {isInitialLoading && loading ? "..." : balance}
+            </span>
+            <span className="text-xl text-muted-foreground">G$</span>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleManualRefresh}
+            disabled={loading}
+            className={loading ? "animate-spin" : ""}
+          >
+            <RefreshCw className="h-4 w-4" />
+          </Button>
         </div>
 
         {error && (
@@ -106,7 +146,7 @@ export function GDOLLARBalance({ showClaimButton = true, compact = false }: GDOL
             <Button
               variant="outline"
               size="sm"
-              onClick={() => 
+              onClick={() =>
                 window.open(`https://celoscan.io/token/${GDOLLAR_ADDRESS}`, "_blank")
               }
             >

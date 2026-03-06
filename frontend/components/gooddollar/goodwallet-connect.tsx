@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Wallet, ExternalLink, Zap } from "lucide-react";
+import { Wallet, ExternalLink, Zap, RefreshCw } from "lucide-react";
 import { useWeb3 } from "@/contexts/web3-context";
+import { useToast } from "@/hooks/use-toast";
 import { GDOLLARBalance } from "./gdollar-balance";
 import { projectId, metadata } from "@/lib/web3/reown-config";
 
@@ -13,24 +14,42 @@ import "@goodsdks/ui-components";
 
 export function GoodWalletConnect() {
   const { wallet } = useWeb3();
+  const { toast } = useToast();
   const [isComponentReady, setIsComponentReady] = useState(false);
+
+  const addFuseChain = async () => {
+    if (typeof window !== "undefined" && window.ethereum) {
+      try {
+        await (window.ethereum as any).request({
+          method: "wallet_addEthereumChain",
+          params: [{
+            chainId: "0x7a", // 122 in hex = Fuse Network
+            chainName: "Fuse Network",
+            nativeCurrency: { name: "Fuse", symbol: "FUSE", decimals: 18 },
+            rpcUrls: ["https://rpc.fuse.io", "https://fuse-mainnet.chainstacklabs.com"],
+            blockExplorerUrls: ["https://explorer.fuse.io"],
+          }],
+        });
+        toast({
+          title: "Network Added",
+          description: "Fuse Network has been added to your wallet.",
+        });
+      } catch (err: any) {
+        console.warn("Fuse Chain registration warning:", err);
+        if (err.code !== 4001) { // Not a user rejection
+          toast({
+            title: "Network Error",
+            description: "Failed to add Fuse network. Please add it manually.",
+            variant: "destructive",
+          });
+        }
+      }
+    }
+  };
 
   useEffect(() => {
     // Pre-register Fuse Network with the wallet so claim-button can switch to it
-    if (typeof window !== "undefined" && window.ethereum) {
-      (window.ethereum as any).request({
-        method: "wallet_addEthereumChain",
-        params: [{
-          chainId: "0x7a", // 122 in hex = Fuse Network
-          chainName: "Fuse Network",
-          nativeCurrency: { name: "Fuse", symbol: "FUSE", decimals: 18 },
-          rpcUrls: ["https://rpc.fuse.io", "https://fuse-mainnet.chainstacklabs.com"],
-          blockExplorerUrls: ["https://explorer.fuse.io"],
-        }],
-      }).catch((err: any) => {
-        console.warn("Fuse Chain registration warning:", err);
-      });
-    }
+    addFuseChain();
 
     // Mark as ready once the web component is defined
     if (typeof customElements !== "undefined") {
@@ -113,6 +132,14 @@ export function GoodWalletConnect() {
           >
             <Wallet className="h-4 w-4 mr-2" />
             Open GoodWallet
+          </Button>
+          <Button
+            variant="outline"
+            onClick={addFuseChain}
+            title="Fix Fuse Network connection"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Fix Network
           </Button>
           <Button
             variant="outline"
