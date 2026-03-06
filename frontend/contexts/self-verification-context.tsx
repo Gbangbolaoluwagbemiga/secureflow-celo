@@ -65,7 +65,7 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
 
       try {
         // Dynamically import to avoid build-time SSH dep issues
-        const mod = await import("@selfxyz/qrcode" as any);
+        const mod = await import(/* webpackIgnore: true */ "@selfxyz/qrcode");
         const SelfAppBuilder = mod.SelfAppBuilder;
         const hostname = window.location.hostname || "";
         const endpointOverride = (process.env.NEXT_PUBLIC_SELF_ENDPOINT as string) || `${window.location.origin}/api/self/verify`;
@@ -408,7 +408,7 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
       const LazyQRCode = ({ app, onSuccess, onError }: any) => {
         const [QRComp, setQRComp] = React.useState<any>(null);
         React.useEffect(() => {
-          import("@selfxyz/qrcode" as any).then((mod) => setQRComp(() => mod.SelfQRcodeWrapper));
+          import(/* webpackIgnore: true */ "@selfxyz/qrcode").then((mod) => setQRComp(() => mod.SelfQRcodeWrapper));
         }, []);
         if (!QRComp) return <div className="p-4 text-center text-sm text-muted-foreground">Loading QR code...</div>;
         return <QRComp selfApp={app} onSuccess={onSuccess} onError={onError} />;
