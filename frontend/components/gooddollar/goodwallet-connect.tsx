@@ -77,9 +77,16 @@ export function GoodWalletConnect() {
         )}
 
         {/* GoodDollar Claim Button Integration */}
-        <div className="my-4 flex justify-center bg-gray-50 p-4 rounded-lg border border-gray-100">
-          {/* @ts-ignore */}
-          <claim-button environment="production" />
+        <div className="my-4 flex justify-center bg-gray-50 p-4 rounded-lg border border-gray-100 min-h-[60px]">
+          {isComponentReady ? (
+            /* @ts-ignore */
+            <claim-button environment="production" />
+          ) : (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground animate-pulse">
+              <Zap className="h-4 w-4" />
+              Preparing claim button...
+            </div>
+          )}
         </div>
 
         <div className="flex gap-2 pt-2">
