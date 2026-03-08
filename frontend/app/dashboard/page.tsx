@@ -710,10 +710,10 @@ export default function DashboardPage() {
               const finalStatus = hasResolvedDispute
                 ? "disputed" // We'll show this as "Dispute Resolved" in the badge
                 : (baseStatus as
-                    | "pending"
-                    | "active"
-                    | "completed"
-                    | "disputed");
+                  | "pending"
+                  | "active"
+                  | "completed"
+                  | "disputed");
 
               // Removed excessive debug logging
 
@@ -808,34 +808,34 @@ export default function DashboardPage() {
     const finalStatus = hasResolvedDispute
       ? "resolved"
       : isTerminated
-      ? "terminated"
-      : status;
+        ? "terminated"
+        : status;
 
     const variants: Record<string, { variant: any; icon: any; label: string }> =
-      {
-        pending: { variant: "secondary", icon: Clock, label: "Pending" },
-        active: { variant: "default", icon: TrendingUp, label: "Active" },
-        completed: {
-          variant: "outline",
-          icon: CheckCircle2,
-          label: "Completed",
-        },
-        disputed: {
-          variant: "destructive",
-          icon: AlertCircle,
-          label: "Disputed",
-        },
-        resolved: {
-          variant: "secondary",
-          icon: CheckCircle2,
-          label: "Dispute Resolved",
-        },
-        terminated: {
-          variant: "secondary",
-          icon: AlertCircle,
-          label: "Terminated",
-        },
-      };
+    {
+      pending: { variant: "secondary", icon: Clock, label: "Pending" },
+      active: { variant: "default", icon: TrendingUp, label: "Active" },
+      completed: {
+        variant: "outline",
+        icon: CheckCircle2,
+        label: "Completed",
+      },
+      disputed: {
+        variant: "destructive",
+        icon: AlertCircle,
+        label: "Disputed",
+      },
+      resolved: {
+        variant: "secondary",
+        icon: CheckCircle2,
+        label: "Dispute Resolved",
+      },
+      terminated: {
+        variant: "secondary",
+        icon: AlertCircle,
+        label: "Terminated",
+      },
+    };
 
     const config = variants[finalStatus] || variants.pending;
     const Icon = config.icon;
@@ -1059,9 +1059,9 @@ export default function DashboardPage() {
         freelancerAddress // Freelancer address
       );
 
-      // Wait a moment for blockchain state to update
+      // Wait a moment for blockchain state to update, then reload
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      await fetchUserEscrows();
+      window.location.reload();
     } catch (error) {
       toast({
         title: "Start Work Failed",
@@ -1145,7 +1145,7 @@ export default function DashboardPage() {
             });
             if (receipt) break;
           }
-        } catch (error) {}
+        } catch (error) { }
         await new Promise((resolve) => setTimeout(resolve, 2000));
         attempts++;
       }
@@ -1260,7 +1260,7 @@ export default function DashboardPage() {
             });
             if (receipt) break;
           }
-        } catch (error) {}
+        } catch (error) { }
         await new Promise((resolve) => setTimeout(resolve, 2000));
         attempts++;
       }
@@ -1358,7 +1358,7 @@ export default function DashboardPage() {
           onRefresh={handleRefresh}
           isRefreshing={isRefreshing}
         />
-        
+
         {/* GoodDollar Connect Integration */}
         <div className="mb-8">
           <GoodWalletConnect />
