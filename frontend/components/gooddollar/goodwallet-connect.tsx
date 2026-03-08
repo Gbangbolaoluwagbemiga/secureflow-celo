@@ -17,7 +17,7 @@ export function GoodWalletConnect() {
   const { wallet } = useWeb3();
   const { toast } = useToast();
   const [isComponentReady, setIsComponentReady] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   const { open } = useAppKit();
 
