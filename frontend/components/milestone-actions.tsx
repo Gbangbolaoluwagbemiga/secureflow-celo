@@ -36,6 +36,18 @@ import { useEngagementRewards } from "@goodsdks/engagement-sdk";
 // Production Engagement Rewards Contract
 const ENGAGEMENT_REWARDS_ADDRESS = "0x25db74CF4E7BA120526fd87e159CF656d94bAE43";
 
+// Safe wrapper — useEngagementRewards internally calls wagmi hooks which require
+// WagmiProvider. Since we use EthersAdapter (no WagmiProvider), we catch the
+// error and return null so the rest of the component renders normally.
+function useSafeEngagementRewards(address: `0x${string}`) {
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useEngagementRewards(address);
+  } catch {
+    return null;
+  }
+}
+
 interface MilestoneActionsProps {
   escrowId: string;
   milestoneIndex: number;
@@ -66,7 +78,7 @@ export function MilestoneActions({
   beneficiaryAddress,
 }: MilestoneActionsProps) {
   const { getContract, wallet } = useWeb3();
-  const engagementRewards = useEngagementRewards(ENGAGEMENT_REWARDS_ADDRESS);
+  const engagementRewards = useSafeEngagementRewards(ENGAGEMENT_REWARDS_ADDRESS as `0x${string}`);
   const { executeTransaction, executeBatchTransaction, isSmartAccountReady } =
     useSmartAccount();
   const { isDelegatedFunction } = useDelegation();
@@ -311,27 +323,27 @@ export function MilestoneActions({
                 // 1. Get current block for signature validity
                 const { ethers } = await import("ethers");
                 let currentBlock = 0;
-                
+
                 if (typeof window !== "undefined" && window.ethereum) {
-                   const provider = new ethers.BrowserProvider(window.ethereum as any);
-                   currentBlock = await provider.getBlockNumber();
+                  const provider = new ethers.BrowserProvider(window.ethereum as any);
+                  currentBlock = await provider.getBlockNumber();
                 } else {
-                   const provider = new ethers.JsonRpcProvider("https://forno.celo.org");
-                   currentBlock = await provider.getBlockNumber();
+                  const provider = new ethers.JsonRpcProvider("https://forno.celo.org");
+                  currentBlock = await provider.getBlockNumber();
                 }
 
                 validUntilBlock = Number(currentBlock) + 600; // Valid for 600 blocks (~50 mins)
 
                 // 2. Check if user is registered
                 const erContract = getContract(ENGAGEMENT_REWARDS_ADDRESS, ENGAGEMENT_REWARDS_ABI);
-                
+
                 if (erContract) {
                   const result = await erContract.call(
                     "userRegistrations",
                     CONTRACTS.SECUREFLOW_ESCROW,
                     wallet.address
                   );
-                  
+
                   // Result is [isRegistered, lastClaimTimestamp]
                   const isRegisteredInt = result[0];
 
