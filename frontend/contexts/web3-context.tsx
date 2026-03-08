@@ -748,7 +748,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
 
           // Force higher gas limits for specific functions that need it
           if (method === "approve") {
-            gasLimit = "0xc350"; // 50,000 gas - force higher limit for ERC20 approve
+            gasLimit = "0x186A0"; // 100,000 gas - sufficient for GoodDollar ERC20 approve
           } else {
             try {
               const estimatedGas = await provider.request({
