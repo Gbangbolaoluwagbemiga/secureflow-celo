@@ -9,6 +9,7 @@ import "./modules/AdminFunctions.sol";
 import "./modules/RefundSystem.sol";
 import "./modules/ViewFunctions.sol";
 import "./modules/RatingSystem.sol";
+import "./interfaces/IIdentity.sol";
 
 /**
  * @title SecureFlow - Modular Hybrid Escrow + Marketplace Platform
@@ -26,10 +27,10 @@ contract SecureFlow is
     RatingSystem
 {
     constructor(
-        address _monadToken, 
+        address _paymentToken, 
         address _feeCollector, 
         uint256 _platformFeeBP
-    ) EscrowCore(_monadToken, _feeCollector, _platformFeeBP) {
+    ) EscrowCore(_paymentToken, _feeCollector, _platformFeeBP) {
         // Constructor is handled by EscrowCore
     }
 }

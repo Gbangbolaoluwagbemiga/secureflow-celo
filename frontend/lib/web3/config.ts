@@ -46,9 +46,14 @@ export const CONTRACTS = {
 
   // GoodDollar (G$) on Celo Mainnet
   // Official address: https://docs.gooddollar.org/
-  GDOLLAR_CELO: 
-    process.env.NEXT_PUBLIC_GDOLLAR_CELO || 
+  GDOLLAR_CELO:
+    process.env.NEXT_PUBLIC_GDOLLAR_CELO ||
     "0x62B8B11039FcfE5aB0C56E502b1C372A3d2a9c7A", // G$ on Celo (official)
+
+  // GoodDollar Identity on Celo
+  GDOLLAR_IDENTITY:
+    process.env.NEXT_PUBLIC_GDOLLAR_IDENTITY ||
+    "0xFC325BBfBA3f9547d792900eeCf69542a188846C", // Identity on Celo
 
   CELOSCAN_API_KEY:
     process.env.NEXT_PUBLIC_CELOSCAN_API_KEY ||

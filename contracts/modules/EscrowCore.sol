@@ -31,7 +31,7 @@ abstract contract EscrowCore is ReentrancyGuard, Ownable, Pausable, ISecureFlow 
     string public constant CONTRACT_VERSION = "1.0.0";
 
     // ===== State (config) =====
-    address public monadToken;
+    address public paymentToken;
     uint256 public platformFeeBP;
     address public feeCollector;
     bool public jobCreationPaused;
@@ -54,9 +54,10 @@ abstract contract EscrowCore is ReentrancyGuard, Ownable, Pausable, ISecureFlow 
     mapping(address => uint256) public reputation;
     mapping(address => uint256) public completedEscrows;
 
-    // Self Protocol Verification
-    mapping(address => bool) public selfVerifiedUsers;
+    // Verification Systems
+    mapping(address => bool) public selfVerifiedUsers; // Self Protocol
     mapping(address => uint256) public verificationTimestamp;
+    address public identity; // GoodDollar Identity contract
 
     // GoodDollar Engagement Rewards
     IEngagementRewards public engagementRewards;
@@ -106,22 +107,40 @@ abstract contract EscrowCore is ReentrancyGuard, Ownable, Pausable, ISecureFlow 
         _;
     }
 
-    constructor(address _monadToken, address _feeCollector, uint256 _platformFeeBP) {
+    constructor(address _paymentToken, address _feeCollector, uint256 _platformFeeBP) {
         require(_feeCollector != address(0), "Invalid fee collector");
         require(_platformFeeBP <= MAX_PLATFORM_FEE_BP, "Fee too high");
 
-        monadToken = _monadToken;
+        paymentToken = _paymentToken;
         feeCollector = _feeCollector;
         platformFeeBP = _platformFeeBP;
         nextEscrowId = 1;
 
-        if (_monadToken != address(0)) {
-            whitelistedTokens[_monadToken] = true;
-            emit TokenWhitelisted(_monadToken);
+        if (_paymentToken != address(0)) {
+            whitelistedTokens[_paymentToken] = true;
+            emit TokenWhitelisted(_paymentToken);
         }
     }
 
     // ===== Helper functions =====
+    function isVerified(address user) public view returns (bool) {
+        if (user == address(0)) return false;
+        
+        // Check Self Protocol verification (manual/backend)
+        if (selfVerifiedUsers[user]) return true;
+        
+        // Check GoodDollar Identity (on-chain whitelisting)
+        if (identity != address(0)) {
+            try IIdentity(identity).isWhitelisted(user) returns (bool whitelisted) {
+                return whitelisted;
+            } catch {
+                return false;
+            }
+        }
+        
+        return false;
+    }
+
     function _calculateFee(uint256 amount) internal view returns (uint256) {
         if (platformFeeBP == 0) return 0;
         return (amount * platformFeeBP) / 10000;
@@ -153,8 +172,8 @@ abstract contract EscrowCore is ReentrancyGuard, Ownable, Pausable, ISecureFlow 
     }
 
     function _updateReputation(address user, uint256 points, string memory reason) internal {
-        // Only update reputation for verified users to prevent Sybil attacks
-        if (user != address(0) && selfVerifiedUsers[user]) {
+        // Only update reputation for verified users (Self Protocol or GoodDollar) to prevent Sybil attacks
+        if (isVerified(user)) {
             reputation[user] += points;
             emit ReputationUpdated(user, reputation[user], reason);
         }

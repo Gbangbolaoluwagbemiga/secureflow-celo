@@ -70,6 +70,14 @@ async function main() {
   // Whitelist the token
   await secureFlow.whitelistToken(tokenAddress);
 
+  // Set GoodDollar Identity address on Celo mainnet
+  if (hre.network.name === "celo") {
+    const GDOLLAR_IDENTITY = "0xFC325BBfBA3f9547d792900eeCf69542a188846C";
+    console.log("\n🆔 Setting GoodDollar Identity address...");
+    await secureFlow.setIdentity(GDOLLAR_IDENTITY);
+    console.log("✅ Identity address set to:", GDOLLAR_IDENTITY);
+  }
+
   const secureFlowAddress = await secureFlow.getAddress();
 
   // Get contract info

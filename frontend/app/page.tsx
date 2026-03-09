@@ -111,8 +111,9 @@ export default function HomePage() {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden gradient-mesh">
-        <div className="absolute inset-0 bg-gradient-to-b from-background/50 to-background" />
-
+        <div className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80" aria-hidden="true">
+          <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-linear-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" style={{ clipPath: 'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)' }}></div>
+        </div>
         <div className="container relative mx-auto px-4 py-24 md:py-32">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -125,11 +126,8 @@ export default function HomePage() {
               <span className="text-sm font-medium">Powered by Celo</span>
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 text-balance leading-tight">
-              Trustless Payments.{" "}
-              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                Transparent Milestones.
-              </span>
+            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
+              <span className="bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent">SecureFlow</span>: The Future of Freelancing
             </h1>
 
             <p className="text-xl md:text-2xl text-muted-foreground mb-8 text-pretty max-w-2xl mx-auto leading-relaxed">

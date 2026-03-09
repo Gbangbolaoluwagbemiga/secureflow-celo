@@ -115,6 +115,11 @@ abstract contract AdminFunctions is EscrowCore {
         _unpause();
     }
 
+    function setIdentity(address _identity) external onlyOwner {
+        require(_identity != address(0), "Invalid address");
+        identity = _identity;
+    }
+
     // ===== Self Protocol Verification Functions =====
     
     /**
