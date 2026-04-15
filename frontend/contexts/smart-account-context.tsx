@@ -168,7 +168,7 @@ export function SmartAccountProvider({ children }: { children: ReactNode }) {
       console.log(
         "Paymaster contract balance:",
         ethers.formatEther(paymasterBalance),
-        "MON"
+        "HSK"
       );
 
       if (paymasterBalance === BigInt(0)) {
@@ -199,7 +199,7 @@ export function SmartAccountProvider({ children }: { children: ReactNode }) {
 
       // Calculate total gas cost
       const totalGasCost = gasEstimate * gasPrice;
-      console.log("Total gas cost:", ethers.formatEther(totalGasCost), "MON");
+      console.log("Total gas cost:", ethers.formatEther(totalGasCost), "HSK");
 
       // Execute the transaction through Smart Account delegation
       // Decode function and args when targeting SecureFlow, then invoke delegated execution
@@ -365,7 +365,7 @@ export function SmartAccountProvider({ children }: { children: ReactNode }) {
       console.log(
         "Paymaster contract balance:",
         ethers.formatEther(paymasterBalance),
-        "MON"
+        "HSK"
       );
 
       if (paymasterBalance === BigInt(0)) {

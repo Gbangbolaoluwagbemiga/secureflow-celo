@@ -9,7 +9,6 @@ import "./modules/AdminFunctions.sol";
 import "./modules/RefundSystem.sol";
 import "./modules/ViewFunctions.sol";
 import "./modules/RatingSystem.sol";
-import "./interfaces/IIdentity.sol";
 
 /**
  * @title SecureFlow - Modular Hybrid Escrow + Marketplace Platform

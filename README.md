@@ -1,74 +1,64 @@
-# SecureFlow - Decentralized Escrow & Freelance Marketplace
+# SecureFlow (PayFi) — HashKey Chain Escrow Infrastructure
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Solidity](https://img.shields.io/badge/Solidity-^0.8.19-blue)](https://soliditylang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
-[![Celo](https://img.shields.io/badge/Built%20on-Celo-35D07F)](https://celo.org/)
+[![HashKey](https://img.shields.io/badge/Built%20on-HashKey%20Chain-111827)](https://docs.hashkeychain.net/)
 
-> **Production-Ready** decentralized escrow platform with identity verification and multi-token support
+> **Hackathon-ready PayFi** escrow + milestones + dispute resolution on HashKey Chain
 
 ## 🚀 Overview
 
-SecureFlow is a comprehensive decentralized platform combining escrow services with a freelance marketplace, built on Celo blockchain. Features gasless transactions through MetaMask Smart Accounts, multi-arbiter dispute resolution, reputation systems, identity verification via Self Protocol, and support for multiple payment tokens including GoodDollar (G$).
+SecureFlow is a decentralized **PayFi escrow protocol + app** for milestone-based payments. It supports ERC20/native payments, admin/arbiter token whitelisting, multi-arbiter dispute resolution, and an operator-friendly admin panel — deployed on **HashKey Chain**.
 
-**Live Contract**: [`0x067FDA1ED957BB352679cbc840Ce6329E470fd07`](https://celoscan.io/address/0x067FDA1ED957BB352679cbc840Ce6329E470fd07) on Celo Mainnet
+**Latest Testnet Deployment (HashKey Chain Testnet, chainId 133)**:
+
+- **SecureFlowPayFi**: `0x2b8Cb611f8EADcfBbfDa69e4d481A597e7b9dF9a`
+- **MockERC20 (MTK)**: `0x54290C255108E547877C630cC55b23a2A62a2dAF`
+- **Explorer**: `https://testnet-explorer.hsk.xyz/address/0x2b8Cb611f8EADcfBbfDa69e4d481A597e7b9dF9a`
 
 ## ✨ Key Features
 
 ### 🏗️ Core Platform
 
-- **Hybrid Escrow + Marketplace**: Direct hires and open job applications
-- **Gasless Transactions**: MetaMask Smart Account integration for zero-fee transactions
+- **PayFi Escrow + Milestones**: Create escrow, submit/approve/reject/dispute milestones
 - **Multi-Arbiter Consensus**: 1-5 arbiters with quorum-based voting
-- **Reputation System**: Anti-gaming reputation tracking with NFT badges
-- **Multi-Token Support**: Native CELO, cUSD, and GoodDollar (G$) payments
+- **Token Whitelisting**: Only admin/arbiter-approved ERC20 tokens can be used
+- **Native + ERC20 Support**: pay in native HSK or whitelisted ERC20 tokens
 
 ### 🔐 Identity & Security
 
-- **Self Protocol Integration**: Privacy-first identity verification using zero-knowledge proofs
-  - Sybil attack prevention
-  - Age verification (18+)
-  - Humanity checks
-  - On-chain verification tracking
-- **Smart Account Integration**: Delegated execution for gasless transactions
 - **Reentrancy Protection**: All external functions protected
 - **Emergency Controls**: Admin pause and refund mechanisms
 
 ### 🎯 Advanced Features
 
 - **Milestone Management**: Submit, approve, reject, dispute milestones with feedback
-- **Job Applications**: Freelancers apply to open jobs with pagination
 - **Dispute Resolution**: Time-limited dispute windows with arbiter consensus
 - **Real-time Notifications**: In-app notification system
-- **Rating System**: Comprehensive freelancer rating with anti-gaming protection
-- **GoodWallet Integration**: Support for GoodDollar UBI payments
 
 ### 💰 Payment Tokens
 
-- **CELO**: Native blockchain currency
-- **cUSD**: Celo Dollar stablecoin (whitelisted)
-- **GoodDollar (G$)**: Universal Basic Income token (whitelisted)
-  - Address: `0x62B8B11039FcfE5aB0C56E502b1C372A3d2a9c7A`
-  - Claim daily G$ UBI via GoodWallet
-  - Use G$ for all SecureFlow payments
+- **HSK**: Native HashKey Chain currency
+- **MockERC20 (MTK)**: deployed automatically on testnet for demos
+- **HashKey mainnet tokens** (official docs):
+  - **USDT**: `0xf1b50ed67a9e2cc94ad3c477779e2d4cbfff9029`
+  - **USDC**: `0x054ed45810DbBAb8B27668922D110669c9D88D0a`
 
 ## 📁 Project Structure
 
 ```
 secureflow-celo/
 ├── contracts/
-│   ├── SecureFlow.sol          # Main escrow & marketplace contract
+│   ├── SecureFlowPayFi.sol     # Size-optimized PayFi escrow contract
 │   ├── modules/                # Modular contract components
 │   │   ├── EscrowCore.sol
-│   │   ├── Marketplace.sol
-│   │   ├── RatingSystem.sol
 │   │   └── ...
 │   └── interfaces/
 │       └── ISecureFlow.sol
 ├── frontend/                   # Next.js 15 application
 │   ├── app/                    # App router pages
 │   ├── components/             # UI components
-│   │   ├── gooddollar/        # GoodDollar integration
 │   │   ├── self/              # Self Protocol components
 │   │   └── ...
 │   ├── contexts/              # React contexts
@@ -76,8 +66,7 @@ secureflow-celo/
 │   └── lib/                   # Utilities and configs
 ├── scripts/
 │   ├── deploy.js              # Contract deployment
-│   ├── whitelist-gooddollar.js
-│   ├── verify-gooddollar.js
+│   ├── whitelist-token.js
 │   └── ...
 ├── deployed.json              # Deployment information
 └── README.md                  # This file
@@ -87,9 +76,9 @@ secureflow-celo/
 
 ### Prerequisites
 
-- **Node.js**: >=22 <23 (required for Self Protocol)
+- **Node.js**: LTS recommended (Hardhat warns on Node 25)
 - **MetaMask** or compatible wallet
-- **Celo mainnet** access (for production) or Alfajores testnet (for testing)
+- **HashKey Chain Testnet** access (for hackathon demo)
 
 ### Installation
 
@@ -107,18 +96,16 @@ npm install
 
 Create `.env` in root:
 ```env
-CELO_RPC_URL=https://forno.celo.org
-CELO_TESTNET_RPC_URL=https://alfajores-forno.celo-testnet.org
 PRIVATE_KEY=your_private_key_here
-CELOSCAN_API_KEY=your_celoscan_api_key
+HASHKEY_RPC_URL=https://mainnet.hsk.xyz
+HASHKEY_TESTNET_RPC_URL=https://testnet.hsk.xyz
 ```
 
 Create `frontend/.env.local`:
 ```env
-NEXT_PUBLIC_SECUREFLOW_ESCROW=0x067FDA1ED957BB352679cbc840Ce6329E470fd07
-NEXT_PUBLIC_CUSD_ADDRESS=0x765DE816845861e75A25fCA122bb6898B8B1282a
+NEXT_PUBLIC_SECUREFLOW_ESCROW=0x2b8Cb611f8EADcfBbfDa69e4d481A597e7b9dF9a
+NEXT_PUBLIC_MOCK_ERC20=0x54290C255108E547877C630cC55b23a2A62a2dAF
 NEXT_PUBLIC_REOWN_ID=your_reown_project_id
-NEXT_PUBLIC_CELO_RPC_URL=https://forno.celo.org
 ```
 
 3. **Start development server**
@@ -132,42 +119,29 @@ Visit `http://localhost:3000`
 
 ## 📦 Contract Deployment
 
-### Deploy to Celo Mainnet
+### Deploy to HashKey Chain Testnet (recommended for hackathon)
 
 ```bash
-# Deploy SecureFlow contract
-npx hardhat run scripts/deploy.js --network celo
-
-# Whitelist GoodDollar token
-npx hardhat run scripts/whitelist-gooddollar.js --network celo
-
-# Verify contracts on Celoscan
-npx hardhat run scripts/verify-contracts.js --network celo
-```
-
-### Verify Token
-
-```bash
-# Verify GoodDollar token details
-node scripts/verify-gooddollar.js
+# Deploy SecureFlowPayFi + MockERC20, and whitelist the MockERC20
+cd secureflow-celo
+./node_modules/.bin/hardhat run scripts/deploy.js --network hashkeyTestnet
 ```
 
 ## 🔧 Configuration
 
 ### Supported Networks
 
-- **Celo Mainnet** (Chain ID: 42220)
-  - RPC: `https://forno.celo.org`
-  - Explorer: https://celoscan.io
-- **Celo Alfajores Testnet** (Chain ID: 44787)
-  - RPC: `https://alfajores-forno.celo-testnet.org`
-  - Explorer: https://alfajores.celoscan.io
+- **HashKey Chain Mainnet** (Chain ID: 177)
+  - RPC: `https://mainnet.hsk.xyz`
+  - Explorer: `https://hashkey.blockscout.com`
+- **HashKey Chain Testnet** (Chain ID: 133)
+  - RPC: `https://testnet.hsk.xyz`
+  - Explorer: `https://testnet-explorer.hsk.xyz`
 
 ### Whitelisted Tokens
 
-- **CELO**: Native token (always supported)
-- **cUSD**: `0x765DE816845861e75A25fCA122bb6898B8B1282a`
-- **GoodDollar (G$)**: `0x62B8B11039FcfE5aB0C56E502b1C372A3d2a9c7A`
+- **HSK**: Native token (always supported as `address(0)`)
+- **MockERC20 (MTK)**: auto-deployed + auto-whitelisted on testnet deploy
 
 ### Adding New Tokens
 
@@ -176,38 +150,6 @@ Admin can whitelist additional ERC20 tokens via:
 - Or deployment script: `scripts/whitelist-token.js`
 
 ## 🎨 Features in Detail
-
-### Self Protocol Integration
-
-SecureFlow integrates with Self Protocol for identity verification:
-
-- **Privacy-First**: Zero-knowledge proofs ensure no personal data is stored
-- **Sybil Prevention**: One verified identity per user
-- **Age Verification**: Ensures users are 18+
-- **On-Chain Tracking**: Verification status stored in smart contract
-
-**Verification Flow:**
-1. User connects wallet
-2. Click "Verify Identity" button
-3. Scan QR code with Self mobile app
-4. Complete verification
-5. Status updated on-chain
-
-**Note**: Self Protocol requires HTTPS and doesn't work on localhost. Use ngrok or deploy to Vercel for testing.
-
-### GoodDollar Integration
-
-SecureFlow supports GoodDollar (G$) payments:
-
-- **UBI Payments**: Users can receive payments in G$ tokens
-- **GoodWallet Support**: Claim daily G$ and use for payments
-- **Balance Display**: View G$ balance in dashboard
-- **Seamless Integration**: Works with all existing escrow features
-
-**Get G$ Tokens:**
-1. Install GoodWallet V2: https://goodwallet.xyz/
-2. Claim daily G$ UBI
-3. Use G$ for SecureFlow payments
 
 ### Smart Accounts
 
@@ -306,7 +248,7 @@ ngrok http 3000
 npx hardhat test
 
 # Verify contracts
-npx hardhat run scripts/verify-contracts.js --network celo
+npx hardhat run scripts/verify-contracts.js --network hashkeyTestnet
 ```
 
 ## 🛠️ Development
@@ -339,21 +281,18 @@ npm start            # Start production server
 
 ### Main Contract
 
-- **Address**: `0x067FDA1ED957BB352679cbc840Ce6329E470fd07`
-- **Network**: Celo Mainnet
-- **Explorer**: [View on Celoscan](https://celoscan.io/address/0x067FDA1ED957BB352679cbc840Ce6329E470fd07)
+- **Address**: `0x2b8Cb611f8EADcfBbfDa69e4d481A597e7b9dF9a`
+- **Network**: HashKey Chain Testnet
+- **Explorer**: `https://testnet-explorer.hsk.xyz/address/0x2b8Cb611f8EADcfBbfDa69e4d481A597e7b9dF9a#code`
 - **Version**: 1.0.0
 
 ### Features
 
 - ✅ Modular architecture
 - ✅ Multi-arbiter consensus
-- ✅ Reputation system
-- ✅ Job applications
 - ✅ Enterprise security
 - ✅ Native & ERC20 support
-- ✅ Self Protocol integration
-- ✅ GoodDollar support
+- ✅ Token whitelisting
 
 ## 🤝 Contributing
 
@@ -375,9 +314,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🙏 Acknowledgments
 
-- **Celo Network**: For the amazing blockchain infrastructure
-- **Self Protocol**: For privacy-first identity verification
-- **GoodDollar**: For Universal Basic Income token support
+- **HashKey Chain**: For the EVM infrastructure
 - **OpenZeppelin**: For secure smart contract libraries
 - **Reown/WalletConnect**: For wallet connection infrastructure
 

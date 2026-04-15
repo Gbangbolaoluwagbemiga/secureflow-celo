@@ -3,7 +3,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_monadToken",
+        "name": "_paymentToken",
         "type": "address"
       },
       {
@@ -369,43 +369,6 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "freelancer",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "rater",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "rating",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newAverageRating",
-        "type": "uint256"
-      }
-    ],
-    "name": "FreelancerRated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "escrowId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
         "name": "depositor",
         "type": "address"
       },
@@ -622,31 +585,6 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "freelancer",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "badgeTier",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "completedJobs",
-        "type": "uint256"
-      }
-    ],
-    "name": "NFTBadgeMinted",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
         "name": "previousOwner",
         "type": "address"
       },
@@ -800,19 +738,6 @@
   },
   {
     "inputs": [],
-    "name": "BEGINNER_THRESHOLD",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "CONTRACT_VERSION",
     "outputs": [
       {
@@ -840,19 +765,6 @@
   {
     "inputs": [],
     "name": "EMERGENCY_REFUND_DELAY",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "INTERMEDIATE_THRESHOLD",
     "outputs": [
       {
         "internalType": "uint256",
@@ -956,19 +868,6 @@
   },
   {
     "inputs": [],
-    "name": "PRO_THRESHOLD",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "REPUTATION_PER_ESCROW",
     "outputs": [
       {
@@ -997,41 +896,41 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "escrowId",
+        "name": "",
         "type": "uint256"
       },
       {
         "internalType": "address",
-        "name": "freelancer",
+        "name": "",
         "type": "address"
       }
     ],
     "name": "acceptFreelancer",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "escrowId",
+        "name": "",
         "type": "uint256"
       },
       {
         "internalType": "string",
-        "name": "coverLetter",
+        "name": "",
         "type": "string"
       },
       {
         "internalType": "uint256",
-        "name": "proposedTimeline",
+        "name": "",
         "type": "uint256"
       }
     ],
     "name": "applyToJob",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -1045,16 +944,6 @@
         "internalType": "uint256",
         "name": "milestoneIndex",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "validUntilBlock",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes",
-        "name": "signature",
-        "type": "bytes"
       }
     ],
     "name": "approveMilestone",
@@ -1296,50 +1185,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "escrowRatings",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "rater",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "freelancer",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "rating",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "escrowId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "ratedAt",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "exists",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "",
         "type": "address"
@@ -1479,61 +1324,8 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      },
-      {
         "internalType": "uint256",
         "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "freelancerRatedEscrows",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "freelancerRatings",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "totalRatings",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "sumRatings",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "averageRating",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "escrowId",
         "type": "uint256"
       }
     ],
@@ -1545,24 +1337,24 @@
         "type": "uint256"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "escrowId",
+        "name": "",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "offset",
+        "name": "",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "limit",
+        "name": "",
         "type": "uint256"
       }
     ],
@@ -1611,26 +1403,7 @@
         "type": "tuple[]"
       }
     ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "freelancer",
-        "type": "address"
-      }
-    ],
-    "name": "getBadgeTier",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "tier",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -1647,45 +1420,6 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "escrowId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getEscrowRating",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "rater",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "freelancer",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "rating",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "ratedAt",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "exists",
-        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -1775,30 +1509,6 @@
         "internalType": "string",
         "name": "projectDescription",
         "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "freelancer",
-        "type": "address"
-      }
-    ],
-    "name": "getFreelancerRating",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "averageRating",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "totalRatings",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -1950,12 +1660,12 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "escrowId",
+        "name": "",
         "type": "uint256"
       },
       {
         "internalType": "address",
-        "name": "user",
+        "name": "",
         "type": "address"
       }
     ],
@@ -1967,7 +1677,7 @@
         "type": "bool"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -1984,6 +1694,25 @@
       }
     ],
     "name": "isArbiterForEscrow",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "isVerified",
     "outputs": [
       {
         "internalType": "bool",
@@ -2068,19 +1797,6 @@
   },
   {
     "inputs": [],
-    "name": "monadToken",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "nextEscrowId",
     "outputs": [
       {
@@ -2134,6 +1850,19 @@
   },
   {
     "inputs": [],
+    "name": "paymentToken",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "platformFeeBP",
     "outputs": [
       {
@@ -2143,24 +1872,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "escrowId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "rating",
-        "type": "uint256"
-      }
-    ],
-    "name": "rateFreelancer",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

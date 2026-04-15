@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { NetworkSetupDialog } from "@/components/network-setup-dialog";
 
 export function WalletButton() {
-  const { wallet, switchToCelo } = useWeb3();
+  const { wallet, switchToHashKey } = useWeb3();
   const { open } = useAppKit();
   const { isConnected: appKitConnected } = useAppKitAccount();
   const [networkIconError, setNetworkIconError] = useState(false);
@@ -57,10 +57,10 @@ export function WalletButton() {
           variant="default"
           className="mr-2"
         >
-          Add Celo Network
+          Add HashKey Chain
         </Button>
-        <Button onClick={switchToCelo} variant="outline">
-          Switch to Celo
+        <Button onClick={switchToHashKey} variant="outline">
+          Switch to HashKey
         </Button>
         <NetworkSetupDialog 
           open={showNetworkDialog} 
@@ -108,7 +108,7 @@ export function WalletButton() {
           )}
         </div>
 
-        <span>{Number(wallet.balance).toFixed(3)} CELO</span>
+        <span>{Number(wallet.balance).toFixed(3)} HSK</span>
         <span className="text-muted-foreground">·</span>
 
         {/* Dynamic wallet avatar (Effigy gradient orb) */}

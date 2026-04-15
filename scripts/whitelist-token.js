@@ -11,7 +11,7 @@ async function main() {
   // Get the contract addresses from deployed.json
   const deployedInfo = require("../deployed.json");
   const secureFlowAddress = deployedInfo.contracts.SecureFlow;
-  const mockTokenAddress = deployedInfo.contracts.MockERC20;
+  const mockTokenAddress = deployedInfo.contracts.MockERC20 || deployedInfo.contracts.Token;
 
   console.log("SecureFlow Address:", secureFlowAddress);
   console.log("MockERC20 Address:", mockTokenAddress);

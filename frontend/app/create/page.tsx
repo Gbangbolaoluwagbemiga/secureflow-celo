@@ -10,7 +10,7 @@ import { useSmartAccount } from "@/contexts/smart-account-context";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CONTRACTS, ZERO_ADDRESS, CELO_MAINNET } from "@/lib/web3/config";
+import { CONTRACTS, ZERO_ADDRESS, HASHKEY_MAINNET } from "@/lib/web3/config";
 import { SECUREFLOW_ABI, ERC20_ABI } from "@/lib/web3/abis";
 import { useRouter } from "next/navigation";
 import { ProjectDetailsStep } from "@/components/create/project-details-step";
@@ -24,7 +24,7 @@ interface Milestone {
 
 export default function CreateEscrowPage() {
   const router = useRouter();
-  const { wallet, getContract, switchToCelo } = useWeb3();
+  const { wallet, getContract, switchToHashKey } = useWeb3();
   const { executeTransaction, isSmartAccountReady } = useSmartAccount();
   const { toast } = useToast();
   const [step, setStep] = useState(1);
@@ -68,7 +68,7 @@ export default function CreateEscrowPage() {
       const currentChainId = await (window.ethereum as any).request({
         method: "eth_chainId",
       });
-      const targetChainId = CELO_MAINNET.chainId; // Celo Mainnet
+      const targetChainId = HASHKEY_MAINNET.chainId; // HashKey Chain
 
       setIsOnCorrectNetwork(
         currentChainId.toLowerCase() === targetChainId.toLowerCase()
@@ -111,21 +111,10 @@ export default function CreateEscrowPage() {
 
       // Known token mappings (use lowercase keys)
       const TOKEN_INFO: { [key: string]: { name: string; symbol: string } } = {
-        "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913": {
-          name: "USD Coin",
-          symbol: "USDC",
-        },
-        // GoodDollar (G$) on Celo
-        // Official address: 0x62B8B11039FcfE5aB0C56E502b1C372A3d2a9c7A
-        [CONTRACTS.GDOLLAR_CELO.toLowerCase()]: {
-          name: "GoodDollar",
-          symbol: "G$",
-        },
-        // cUSD on Celo
-        "0x765de816845861e75a25fca122bb6898b8b1282a": {
-          name: "Celo Dollar",
-          symbol: "cUSD",
-        },
+        [CONTRACTS.USDT.toLowerCase()]: { name: "Tether USD", symbol: "USDT" },
+        [CONTRACTS.USDC.toLowerCase()]: { name: "USD Coin", symbol: "USDC" },
+        [CONTRACTS.WETH.toLowerCase()]: { name: "Wrapped Ether", symbol: "WETH" },
+        [CONTRACTS.WHSK.toLowerCase()]: { name: "Wrapped HSK", symbol: "WHSK" },
       };
 
       const contract = getContract(CONTRACTS.SECUREFLOW_ESCROW, SECUREFLOW_ABI);
@@ -143,7 +132,7 @@ export default function CreateEscrowPage() {
             if (cachedTokens.length > 0) {
               // Quick metadata fetch for cached tokens
               const provider = new ethers.JsonRpcProvider(
-                CELO_MAINNET.rpcUrls[0]
+                HASHKEY_MAINNET.rpcUrls[0]
               );
               const ERC20_ABI = [
                 "function name() view returns (string)",
@@ -230,10 +219,11 @@ export default function CreateEscrowPage() {
       }
 
       // IMMEDIATE: Check known tokens directly (FAST - no event queries needed)
-      // G$ and cUSD are already in TOKEN_INFO, just verify they're whitelisted
       const knownTokenAddresses = [
-        CONTRACTS.GDOLLAR_CELO?.toLowerCase(),
-        "0x765de816845861e75a25fca122bb6898b8b1282a", // cUSD
+        CONTRACTS.USDT?.toLowerCase(),
+        CONTRACTS.USDC?.toLowerCase(),
+        CONTRACTS.WETH?.toLowerCase(),
+        CONTRACTS.WHSK?.toLowerCase(),
       ].filter((addr): addr is string => Boolean(addr));
 
       console.log("⚡ Fast check: Verifying known tokens directly...");
@@ -255,7 +245,7 @@ export default function CreateEscrowPage() {
       );
       console.log(`✅ Verified ${verifiedKnownTokens.length} known tokens`);
 
-      // SHOW KNOWN TOKENS IMMEDIATELY (G$ and cUSD) - don't wait for anything else
+      // SHOW KNOWN TOKENS IMMEDIATELY - don't wait for anything else
       if (verifiedKnownTokens.length > 0) {
         const knownTokensWithInfo = verifiedKnownTokens.map((addr) => {
           const addrLower = addr.toLowerCase();
@@ -281,7 +271,7 @@ export default function CreateEscrowPage() {
       // Only query recent events if we have time (non-blocking)
       try {
         console.log("🔍 Checking recent events (last 500k blocks) in background...");
-        const provider = new ethers.JsonRpcProvider(CELO_MAINNET.rpcUrls[0]);
+        const provider = new ethers.JsonRpcProvider(HASHKEY_MAINNET.rpcUrls[0]);
         const contractWithProvider = new ethers.Contract(
           CONTRACTS.SECUREFLOW_ESCROW,
           SECUREFLOW_ABI,
@@ -460,7 +450,7 @@ export default function CreateEscrowPage() {
       }
 
       // Fetch token metadata in parallel with timeout
-      const provider = new ethers.JsonRpcProvider(CELO_MAINNET.rpcUrls[0]);
+      const provider = new ethers.JsonRpcProvider(HASHKEY_MAINNET.rpcUrls[0]);
       const ERC20_ABI = [
         "function name() view returns (string)",
         "function symbol() view returns (string)",
@@ -584,7 +574,7 @@ export default function CreateEscrowPage() {
     duration: "",
     totalBudget: "",
     beneficiary: "",
-    token: CONTRACTS.MOCK_ERC20, // Default to deployed MockERC20
+    token: CONTRACTS.USDT, // Default PayFi token
     useNativeToken: false,
     isOpenJob: false,
     milestones: [
@@ -768,7 +758,7 @@ export default function CreateEscrowPage() {
       if (!formData.beneficiary) {
         errors.push("Beneficiary address is required for direct escrow");
       } else if (!/^0x[a-fA-F0-9]{40}$/.test(formData.beneficiary)) {
-        errors.push("Beneficiary address must be a valid Celo address");
+        errors.push("Beneficiary address must be a valid address");
       }
     }
 
@@ -906,7 +896,7 @@ export default function CreateEscrowPage() {
           console.error("Token contract error:", tokenError);
           throw new Error(
             `Token contract error: ${tokenError.message ||
-            "Please check the token address and ensure you're on Celo Mainnet"
+            "Please check the token address and ensure you're on HashKey Chain"
             }`,
           );
         }
@@ -991,7 +981,7 @@ export default function CreateEscrowPage() {
           if (balance === null) {
             try {
               const rpcProvider = new ethers.JsonRpcProvider(
-                CELO_MAINNET.rpcUrls[0]
+                HASHKEY_MAINNET.rpcUrls[0]
               );
               const tokenContractRPC = new ethers.Contract(
                 checksummedTokenAddress,
@@ -1061,7 +1051,7 @@ export default function CreateEscrowPage() {
           }
           throw new Error(
             `Failed to check token balance: ${balanceError.message ||
-            "Please ensure you have enough tokens and are on Celo Mainnet"
+            "Please ensure you have enough tokens and are on HashKey Chain"
             }`
           );
         }
@@ -1077,7 +1067,7 @@ export default function CreateEscrowPage() {
             signer
           );
 
-          // Estimate gas with a generous fallback for GoodDollar
+          // Estimate gas with a generous fallback for non-standard ERC20 approvals
           let approveGasLimit: bigint;
           try {
             const estimated = await tokenContractSigner.approve.estimateGas(
@@ -1165,7 +1155,7 @@ export default function CreateEscrowPage() {
             balanceInWei = await walletProvider.getBalance(checksummedAddress);
             balanceSource = "walletProvider";
             console.log(
-              `✅ ${CELO_MAINNET.nativeCurrency.symbol} balance from wallet provider:`,
+              `✅ ${HASHKEY_MAINNET.nativeCurrency.symbol} balance from wallet provider:`,
               balanceInWei.toString()
             );
           } catch (walletError: any) {
@@ -1188,7 +1178,7 @@ export default function CreateEscrowPage() {
             balanceInWei = BigInt(balance);
             balanceSource = "eth_getBalance";
             console.log(
-              `✅ ${CELO_MAINNET.nativeCurrency.symbol} balance from eth_getBalance:`,
+              `✅ ${HASHKEY_MAINNET.nativeCurrency.symbol} balance from eth_getBalance:`,
               balanceInWei.toString()
             );
           } catch (rpcError: any) {
@@ -1202,12 +1192,12 @@ export default function CreateEscrowPage() {
             const { ethers } = await import("ethers");
             const checksummedAddress = ethers.getAddress(wallet.address);
             const provider = new ethers.JsonRpcProvider(
-              CELO_MAINNET.rpcUrls[0]
+              HASHKEY_MAINNET.rpcUrls[0]
             );
             balanceInWei = await provider.getBalance(checksummedAddress);
             balanceSource = "directRPC";
             console.log(
-              `✅ ${CELO_MAINNET.nativeCurrency.symbol} balance from direct RPC:`,
+              `✅ ${HASHKEY_MAINNET.nativeCurrency.symbol} balance from direct RPC:`,
               balanceInWei.toString()
             );
           } catch (directRpcError: any) {
@@ -1220,14 +1210,14 @@ export default function CreateEscrowPage() {
 
         if (!balanceInWei) {
           throw new Error(
-            `Failed to retrieve ${CELO_MAINNET.nativeCurrency.symbol} balance from all methods. Please check your wallet connection and network.`
+            `Failed to retrieve ${HASHKEY_MAINNET.nativeCurrency.symbol} balance from all methods. Please check your wallet connection and network.`
           );
         }
 
         const requiredAmount = BigInt(totalAmountInWei);
         const balanceFormatted = Number(balanceInWei) / 10 ** 18;
         const requiredFormatted = Number(requiredAmount) / 10 ** 18;
-        const nativeSymbol = CELO_MAINNET.nativeCurrency.symbol;
+        const nativeSymbol = HASHKEY_MAINNET.nativeCurrency.symbol;
 
         console.log(`${nativeSymbol} Balance check:`, {
           balanceSource,
@@ -1590,12 +1580,12 @@ export default function CreateEscrowPage() {
                     Wrong Network
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Please switch to Celo Mainnet to create escrows
+                    Please switch to HashKey Chain to create escrows
                   </p>
                 </div>
               </div>
-              <Button onClick={switchToCelo} variant="destructive" size="sm">
-                Switch to Celo Mainnet
+              <Button onClick={switchToHashKey} variant="destructive" size="sm">
+                Switch to HashKey Chain
               </Button>
             </div>
           </div>

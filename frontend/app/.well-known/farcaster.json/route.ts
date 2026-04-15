@@ -30,9 +30,9 @@ export async function GET() {
       splashImageUrl: `${URL}/secureflow-favicon.svg?v=2`,
       splashBackgroundColor: "#0A0E27",
       webhookUrl: `${URL}/api/webhook`,
-      subtitle: "Trustless Escrow on Base",
+      subtitle: "Trustless Escrow on HashKey",
       description:
-        "Decentralized freelance marketplace with transparent milestone payments powered by Base blockchain.",
+        "Decentralized freelance marketplace with transparent milestone payments powered by HashKey Chain.",
       screenshotUrls: [
         `${URL}/screenshots/dashboard.png`,
         `${URL}/screenshots/create-job.png`,
@@ -44,7 +44,7 @@ export async function GET() {
       tagline: "Trustless payments, milestones",
       ogTitle: "SecureFlow - Trustless Escrow",
       ogDescription:
-        "Decentralized freelance marketplace with transparent milestone payments powered by Base blockchain.",
+        "Decentralized freelance marketplace with transparent milestone payments powered by HashKey Chain.",
       ogImageUrl: `${URL}/secureflow-favicon.svg?v=2`,
       noindex: false,
     },

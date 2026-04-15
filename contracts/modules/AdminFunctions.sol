@@ -30,11 +30,6 @@ abstract contract AdminFunctions is EscrowCore {
         emit FeeCollectorUpdated(_collector);
     }
 
-    function setEngagementRewards(address _engagementRewards) external onlyOwner {
-        require(_engagementRewards != address(0), "Invalid address");
-        engagementRewards = IEngagementRewards(_engagementRewards);
-    }
-
     function whitelistToken(address token) external onlyOwnerOrArbiter {
         require(token != address(0), "Invalid token");
         whitelistedTokens[token] = true;
@@ -113,11 +108,6 @@ abstract contract AdminFunctions is EscrowCore {
 
     function unpause() external onlyOwner {
         _unpause();
-    }
-
-    function setIdentity(address _identity) external onlyOwner {
-        require(_identity != address(0), "Invalid address");
-        identity = _identity;
     }
 
     // ===== Self Protocol Verification Functions =====

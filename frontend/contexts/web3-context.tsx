@@ -7,7 +7,7 @@ import {
   useEffect,
   type ReactNode,
 } from "react";
-import { CELO_MAINNET, CELO_TESTNET, CONTRACTS } from "@/lib/web3/config";
+import { HASHKEY_MAINNET, HASHKEY_TESTNET, CONTRACTS } from "@/lib/web3/config";
 import type { WalletState } from "@/lib/web3/types";
 import { useToast } from "@/hooks/use-toast";
 import { useAppKit, useAppKitAccount, useAppKitNetwork } from "@reown/appkit/react";
@@ -25,9 +25,9 @@ interface Web3ContextType {
   wallet: WalletState;
   connectWallet: () => Promise<void>;
   disconnectWallet: () => void;
-  switchToCelo: () => Promise<void>;
-  switchToCeloTestnet: () => Promise<void>;
-  addCeloNetwork: () => Promise<boolean>;
+  switchToHashKey: () => Promise<void>;
+  switchToHashKeyTestnet: () => Promise<void>;
+  addHashKeyNetwork: () => Promise<boolean>;
   getContract: (address: string, abi: any) => any;
   isOwner: boolean;
 }
@@ -48,17 +48,17 @@ export function Web3Provider({ children }: { children: ReactNode }) {
   const [isSwitchingNetwork, setIsSwitchingNetwork] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
 
-  // Helper to check if Celo network exists in wallet
-  const checkCeloNetworkExists = async (): Promise<boolean> => {
+  // Helper to check if HashKey network exists in wallet
+  const checkHashKeyNetworkExists = async (): Promise<boolean> => {
     if (typeof window === "undefined" || !window.ethereum) return false;
 
     try {
       const provider = window.ethereum as unknown as Eip1193Provider;
       const chainId = await provider.request({ method: "eth_chainId" });
       const chainIdNumber = Number.parseInt(chainId, 16);
-      const targetChainId = Number.parseInt(CELO_MAINNET.chainId, 16);
+      const targetChainId = Number.parseInt(HASHKEY_MAINNET.chainId, 16);
 
-      // If already on Celo, network exists
+      // If already on HashKey, network exists
       if (chainIdNumber === targetChainId) return true;
 
       // Try to switch - if it fails with 4902, network doesn't exist
@@ -66,7 +66,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
       try {
         await provider.request({
           method: "wallet_switchEthereumChain",
-          params: [{ chainId: CELO_MAINNET.chainId }],
+          params: [{ chainId: HASHKEY_MAINNET.chainId }],
         });
         // If switch succeeds, network exists (but we're now on it)
         return true;
@@ -117,10 +117,9 @@ export function Web3Provider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (appKitConnected && appKitAddress) {
       const chainIdNumber = appKitChainId ? Number(appKitChainId) : null;
-      const targetChainId = Number.parseInt(CELO_MAINNET.chainId, 16);
+      const targetChainId = Number.parseInt(HASHKEY_MAINNET.chainId, 16);
 
-      // Support both Celo and Fuse (122) so the dashboard doesn't disappear when claiming G$
-      const isSupportedNetwork = chainIdNumber === targetChainId || chainIdNumber === 122;
+      const isSupportedNetwork = chainIdNumber === targetChainId;
 
       // Update wallet state from AppKit
       if (isSupportedNetwork) {
@@ -147,7 +146,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
         // Only show helpful message if it's completely unsupported
         toast({
           title: "Unsupported Network",
-          description: "Please switch back to Celo Mainnet for SecureFlow functions.",
+          description: "Please switch to HashKey Chain for SecureFlow functions.",
           variant: "destructive",
         });
       }
@@ -229,15 +228,14 @@ export function Web3Provider({ children }: { children: ReactNode }) {
           method: "eth_chainId",
         });
         const chainIdNumber = Number.parseInt(chainId, 16);
-        const targetChainId = Number.parseInt(CELO_MAINNET.chainId, 16);
+        const targetChainId = Number.parseInt(HASHKEY_MAINNET.chainId, 16);
 
-        // Support both Celo and Fuse (122)
-        const isSupportedNetwork = chainIdNumber === targetChainId || chainIdNumber === 122;
+        const isSupportedNetwork = chainIdNumber === targetChainId;
 
         // Keep them connected regardless of network so the dashboard doesn't disappear
         if (!isSupportedNetwork) {
-          // They are on a random network, we still render the dashboard
-          // but don't fetch a Celo balance using this provider
+        // They are on a random network, we still render the dashboard
+        // but don't fetch a HashKey balance using this provider
           setWallet({
             address: accounts[0],
             chainId: chainIdNumber,
@@ -320,46 +318,46 @@ export function Web3Provider({ children }: { children: ReactNode }) {
 
       const chainId = await provider.request({ method: "eth_chainId" });
       const chainIdNumber = Number.parseInt(chainId, 16);
-      const targetChainId = Number.parseInt(CELO_MAINNET.chainId, 16);
+      const targetChainId = Number.parseInt(HASHKEY_MAINNET.chainId, 16);
 
-      // Automatically switch to Celo if not already on it
+      // Automatically switch to HashKey if not already on it
       if (chainIdNumber !== targetChainId) {
         toast({
-          title: "Switching to Celo Mainnet",
+          title: "Switching to HashKey Chain",
           description: "Please approve the network switch or network addition",
         });
 
         try {
-          // First, try to switch to Celo (this will automatically add it if missing)
-          await switchToCelo();
+          // First, try to switch to HashKey (this will automatically add it if missing)
+          await switchToHashKey();
           // Wait for network switch to complete
           await new Promise((resolve) => setTimeout(resolve, 1500));
 
-          // Verify we're now on Celo
+          // Verify we're now on HashKey
           const newChainId = await provider.request({
             method: "eth_chainId",
           });
           const newChainIdNumber = Number.parseInt(newChainId, 16);
 
           if (newChainIdNumber !== targetChainId) {
-            // If still not on Celo, try to add it directly
+            // If still not on HashKey, try to add it directly
             try {
               await provider.request({
                 method: "wallet_addEthereumChain",
-                params: [CELO_MAINNET],
+                params: [HASHKEY_MAINNET],
               });
               toast({
-                title: "Celo network added",
+                title: "HashKey Chain added",
                 description:
-                  "Celo Mainnet has been added to your wallet. Please switch to it manually.",
+                  "HashKey Chain has been added to your wallet. Please switch to it manually.",
               });
             } catch (addError: any) {
-              console.error("Failed to add Celo network:", addError);
+              console.error("Failed to add HashKey Chain:", addError);
             }
 
             toast({
               title: "Network switch required",
-              description: "Please switch to Celo Mainnet to use this app",
+              description: "Please switch to HashKey Chain to use this app",
               variant: "destructive",
             });
             return;
@@ -367,7 +365,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
         } catch (switchError: any) {
           console.error("Failed to auto-switch network:", switchError);
 
-          // If switch failed, try to add Celo network directly
+          // If switch failed, try to add HashKey network directly
           if (
             switchError.code === 4902 ||
             switchError.message?.includes("not been added")
@@ -375,27 +373,27 @@ export function Web3Provider({ children }: { children: ReactNode }) {
             try {
               await provider.request({
                 method: "wallet_addEthereumChain",
-                params: [CELO_MAINNET],
+                params: [HASHKEY_MAINNET],
               });
               toast({
-                title: "Celo network added",
+                title: "HashKey Chain added",
                 description:
-                  "Celo Mainnet has been added. Please switch to it in your wallet.",
+                  "HashKey Chain has been added. Please switch to it in your wallet.",
               });
             } catch (addError: any) {
-              console.error("Failed to add Celo network:", addError);
+              console.error("Failed to add HashKey Chain:", addError);
               toast({
                 title: "Network addition failed",
                 description:
                   addError.message ||
-                  "Failed to add Celo Mainnet. Please add it manually.",
+                  "Failed to add HashKey Chain. Please add it manually.",
                 variant: "destructive",
               });
             }
           } else {
             toast({
               title: "Network switch required",
-              description: "Please switch to Celo Mainnet manually to continue",
+              description: "Please switch to HashKey Chain manually to continue",
               variant: "destructive",
             });
           }
@@ -419,7 +417,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
 
       toast({
         title: "Wallet connected",
-        description: `Connected to Celo Mainnet - ${accounts[0].slice(
+        description: `Connected to HashKey Chain - ${accounts[0].slice(
           0,
           6
         )}...${accounts[0].slice(-4)}`,
@@ -436,8 +434,9 @@ export function Web3Provider({ children }: { children: ReactNode }) {
 
       if (isNetworkError) {
         toast({
-          title: "Celo Network Required",
-          description: "Please add Celo Mainnet to your wallet to continue. Click 'Add Celo Network' button.",
+          title: "HashKey Chain Required",
+          description:
+            "Please add HashKey Chain to your wallet to continue. Click 'Add HashKey Chain' button.",
           variant: "destructive",
         });
       } else {
@@ -466,7 +465,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
     });
   };
 
-  const switchToCelo = async () => {
+  const switchToHashKey = async () => {
     if (typeof window === "undefined" || !window.ethereum) return;
     const provider = window.ethereum as unknown as Eip1193Provider;
 
@@ -478,12 +477,12 @@ export function Web3Provider({ children }: { children: ReactNode }) {
       method: "eth_chainId",
     });
     const currentChainIdNumber = Number.parseInt(currentChainId, 16);
-    const targetChainId = Number.parseInt(CELO_MAINNET.chainId, 16);
+    const targetChainId = Number.parseInt(HASHKEY_MAINNET.chainId, 16);
 
     if (currentChainIdNumber === targetChainId) {
       toast({
         title: "Already connected",
-        description: "You're already on Celo mainnet",
+        description: "You're already on HashKey Chain",
       });
       return;
     }
@@ -493,29 +492,29 @@ export function Web3Provider({ children }: { children: ReactNode }) {
     try {
       await provider.request({
         method: "wallet_switchEthereumChain",
-        params: [{ chainId: CELO_MAINNET.chainId }],
+        params: [{ chainId: HASHKEY_MAINNET.chainId }],
       });
 
       toast({
         title: "Network switched",
-        description: "Successfully switched to Celo mainnet",
+        description: "Successfully switched to HashKey Chain",
       });
     } catch (error: any) {
       if (error.code === 4902) {
         try {
           await provider.request({
             method: "wallet_addEthereumChain",
-            params: [CELO_MAINNET],
+            params: [HASHKEY_MAINNET],
           });
 
           toast({
             title: "Network added",
-            description: "Celo mainnet has been added to your wallet",
+            description: "HashKey Chain has been added to your wallet",
           });
         } catch (addError: any) {
           toast({
             title: "Network error",
-            description: addError.message || "Failed to add Celo mainnet",
+            description: addError.message || "Failed to add HashKey Chain",
             variant: "destructive",
           });
         }
@@ -536,7 +535,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addCeloNetwork = async (): Promise<boolean> => {
+  const addHashKeyNetwork = async (): Promise<boolean> => {
     if (typeof window === "undefined" || !window.ethereum) {
       toast({
         title: "Wallet not found",
@@ -550,12 +549,13 @@ export function Web3Provider({ children }: { children: ReactNode }) {
     try {
       await provider.request({
         method: "wallet_addEthereumChain",
-        params: [CELO_MAINNET],
+        params: [HASHKEY_MAINNET],
       });
 
       toast({
-        title: "Celo Network Added! 🎉",
-        description: "Celo Mainnet has been added to your wallet. Please switch to it to continue.",
+        title: "HashKey Chain Added!",
+        description:
+          "HashKey Chain has been added to your wallet. Please switch to it to continue.",
       });
 
       // After adding, try to switch to it
@@ -563,7 +563,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
         try {
           await provider.request({
             method: "wallet_switchEthereumChain",
-            params: [{ chainId: CELO_MAINNET.chainId }],
+            params: [{ chainId: HASHKEY_MAINNET.chainId }],
           });
         } catch (switchError) {
           // User might need to switch manually
@@ -573,18 +573,20 @@ export function Web3Provider({ children }: { children: ReactNode }) {
 
       return true;
     } catch (error: any) {
-      console.error("Failed to add Celo network:", error);
+      console.error("Failed to add HashKey Chain:", error);
 
       if (error.code === 4001) {
         toast({
           title: "Request cancelled",
-          description: "You cancelled adding the Celo network",
+          description: "You cancelled adding HashKey Chain",
           variant: "destructive",
         });
       } else {
         toast({
           title: "Failed to add network",
-          description: error.message || "Please add Celo Mainnet manually in your wallet settings",
+          description:
+            error.message ||
+            "Please add HashKey Chain manually in your wallet settings",
           variant: "destructive",
         });
       }
@@ -592,7 +594,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
     }
   };
 
-  const switchToCeloTestnet = async () => {
+  const switchToHashKeyTestnet = async () => {
     if (typeof window === "undefined" || !window.ethereum) return;
     const provider = window.ethereum as unknown as Eip1193Provider;
 
@@ -604,12 +606,12 @@ export function Web3Provider({ children }: { children: ReactNode }) {
       method: "eth_chainId",
     });
     const currentChainIdNumber = Number.parseInt(currentChainId, 16);
-    const targetChainId = Number.parseInt(CELO_TESTNET.chainId, 16);
+    const targetChainId = Number.parseInt(HASHKEY_TESTNET.chainId, 16);
 
     if (currentChainIdNumber === targetChainId) {
       toast({
         title: "Already connected",
-        description: "You're already on Celo Alfajores testnet",
+        description: "You're already on HashKey Chain testnet",
       });
       return;
     }
@@ -619,30 +621,31 @@ export function Web3Provider({ children }: { children: ReactNode }) {
     try {
       await provider.request({
         method: "wallet_switchEthereumChain",
-        params: [{ chainId: CELO_TESTNET.chainId }],
+        params: [{ chainId: HASHKEY_TESTNET.chainId }],
       });
 
       toast({
         title: "Network switched",
-        description: "Successfully switched to Celo Alfajores testnet",
+        description: "Successfully switched to HashKey Chain testnet",
       });
     } catch (error: any) {
       if (error.code === 4902) {
         try {
           await provider.request({
             method: "wallet_addEthereumChain",
-            params: [CELO_TESTNET],
+            params: [HASHKEY_TESTNET],
           });
 
           toast({
             title: "Network added",
-            description: "Celo Alfajores testnet has been added to your wallet",
+            description:
+              "HashKey Chain testnet has been added to your wallet",
           });
         } catch (addError: any) {
           toast({
             title: "Network error",
             description:
-              addError.message || "Failed to add Celo Alfajores testnet",
+              addError.message || "Failed to add HashKey Chain testnet",
             variant: "destructive",
           });
         }
@@ -696,7 +699,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
           }
 
           // Fallback to direct RPC connection
-          const provider = new ethers.JsonRpcProvider(CELO_MAINNET.rpcUrls[0]);
+          const provider = new ethers.JsonRpcProvider(HASHKEY_MAINNET.rpcUrls[0]);
           const contract = new ethers.Contract(targetAddress, abi, provider);
 
           // Call the contract method directly
@@ -716,8 +719,8 @@ export function Web3Provider({ children }: { children: ReactNode }) {
             method: "eth_chainId",
           });
 
-          // Check if we're on Celo Mainnet
-          const targetChainId = CELO_MAINNET.chainId;
+          // Check if we're on HashKey Chain
+          const targetChainId = HASHKEY_MAINNET.chainId;
 
           // Convert to lowercase for case-insensitive comparison
           const currentChainIdLower = currentChainId.toLowerCase();
@@ -725,19 +728,19 @@ export function Web3Provider({ children }: { children: ReactNode }) {
 
           if (currentChainIdLower !== targetChainIdLower) {
             throw new Error(
-              `Wrong network! Please switch to Celo Mainnet (Chain ID: ${targetChainId}). Current: ${currentChainId}`
+              `Wrong network! Please switch to HashKey Chain (Chain ID: ${targetChainId}). Current: ${currentChainId}`
             );
           }
 
-          // Additional check: verify we can connect to Celo RPC
+          // Additional check: verify we can connect to HashKey RPC
           try {
-            const celoProvider = new ethers.JsonRpcProvider(
-              CELO_MAINNET.rpcUrls[0]
+            const hashkeyProvider = new ethers.JsonRpcProvider(
+              HASHKEY_MAINNET.rpcUrls[0]
             );
-            await celoProvider.getBlockNumber(); // Test connection to Celo
+            await hashkeyProvider.getBlockNumber(); // Test connection
           } catch (celoError) {
             throw new Error(
-              `Network validation failed. Please ensure you're connected to Celo Mainnet (Chain ID: 42220).`
+              `Network validation failed. Please ensure you're connected to HashKey Chain (Chain ID: 177).`
             );
           }
 
@@ -748,7 +751,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
 
           // Force higher gas limits for specific functions that need it
           if (method === "approve") {
-            gasLimit = "0x186A0"; // 100,000 gas - sufficient for GoodDollar ERC20 approve
+            gasLimit = "0x186A0"; // 100,000 gas - sufficient for many ERC20 approves
           } else {
             try {
               const estimatedGas = await provider.request({
@@ -862,9 +865,9 @@ export function Web3Provider({ children }: { children: ReactNode }) {
         wallet,
         connectWallet,
         disconnectWallet,
-        switchToCelo,
-        switchToCeloTestnet,
-        addCeloNetwork,
+        switchToHashKey,
+        switchToHashKeyTestnet,
+        addHashKeyNetwork,
         getContract,
         isOwner,
       }}

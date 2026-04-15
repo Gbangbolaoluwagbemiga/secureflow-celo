@@ -20,35 +20,21 @@ export const metadata = {
   icons: ["/secureflow-logo.svg"],
 };
 
-// Define networks - Celo is first (primary network)
+// Define networks - HashKey Chain is primary
 const networks = [
   {
-    id: 42220,
-    name: "Celo",
-    currency: "CELO",
-    explorerUrl: "https://celoscan.io",
-    rpcUrl: "https://forno.celo.org",
+    id: 177,
+    name: "HashKey Chain",
+    currency: "HSK",
+    explorerUrl: "https://hashkey.blockscout.com",
+    rpcUrl: "https://mainnet.hsk.xyz",
   },
   {
-    id: 122,
-    name: "Fuse Network",
-    currency: "FUSE",
-    explorerUrl: "https://explorer.fuse.io",
-    rpcUrl: "https://rpc.fuse.io",
-  },
-  {
-    id: 84532,
-    name: "Base Sepolia Testnet",
-    currency: "ETH",
-    explorerUrl: "https://sepolia.basescan.org",
-    rpcUrl: "https://sepolia.base.org",
-  },
-  {
-    id: 8453,
-    name: "Base",
-    currency: "ETH",
-    explorerUrl: "https://basescan.org",
-    rpcUrl: "https://mainnet.base.org",
+    id: 133,
+    name: "HashKey Chain Testnet",
+    currency: "HSK",
+    explorerUrl: "https://testnet-explorer.hsk.xyz",
+    rpcUrl: "https://testnet.hsk.xyz",
   },
 ];
 

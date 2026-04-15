@@ -95,7 +95,7 @@ async function main() {
     }
   } else {
     console.log(
-      "\nℹ️ Token is not a deployed contract (using existing token like cUSD or USDC)"
+      "\nℹ️ Token is not a deployed contract (using an existing token)"
     );
     console.log("   Skipping token verification");
   }
@@ -103,14 +103,10 @@ async function main() {
   // Display explorer links
   const chainIdNum = Number(chainId);
   let explorerUrl = "";
-  if (chainIdNum === 42220) {
-    explorerUrl = "https://celoscan.io/address/";
-  } else if (chainIdNum === 44787) {
-    explorerUrl = "https://alfajores.celoscan.io/address/";
-  } else if (chainIdNum === 8453) {
-    explorerUrl = "https://basescan.org/address/";
-  } else if (chainIdNum === 84532) {
-    explorerUrl = "https://sepolia.basescan.org/address/";
+  if (chainIdNum === 177) {
+    explorerUrl = "https://hashkey.blockscout.com/address/";
+  } else if (chainIdNum === 133) {
+    explorerUrl = "https://testnet-explorer.hsk.xyz/address/";
   }
 
   if (explorerUrl) {

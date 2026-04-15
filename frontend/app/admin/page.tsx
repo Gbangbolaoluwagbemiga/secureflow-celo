@@ -15,7 +15,7 @@ import {
 import { useWeb3 } from "@/contexts/web3-context";
 import { useAdminStatus } from "@/hooks/use-admin-status";
 import { useToast } from "@/hooks/use-toast";
-import { CONTRACTS, CELO_MAINNET } from "@/lib/web3/config";
+import { CONTRACTS, HASHKEY_TESTNET } from "@/lib/web3/config";
 import { SECUREFLOW_ABI } from "@/lib/web3/abis";
 import { DisputeResolution } from "@/components/admin/dispute-resolution";
 import {
@@ -171,7 +171,8 @@ export default function AdminPage() {
 
       // Check known tokens directly (normalize to lowercase to avoid duplicates)
       const tokensToCheck = [
-        CONTRACTS.CUSD_MAINNET,
+        CONTRACTS.USDT,
+        CONTRACTS.USDC,
         CONTRACTS.MOCK_ERC20,
         ...knownWhitelistedTokens,
       ]
@@ -316,7 +317,7 @@ export default function AdminPage() {
         let events: any[] = [];
         let lastError: any = null;
 
-        for (const rpcUrl of CELO_MAINNET.rpcUrls) {
+        for (const rpcUrl of HASHKEY_TESTNET.rpcUrls) {
           try {
             provider = new ethers.JsonRpcProvider(rpcUrl);
             const contractWithProvider = new ethers.Contract(
@@ -525,7 +526,8 @@ export default function AdminPage() {
         ...new Set([
           ...uniqueWhitelistedTokens, // From initial direct checks
           ...allWhitelistedTokensFromEvents, // From event queries
-          CONTRACTS.CUSD_MAINNET?.toLowerCase(),
+          CONTRACTS.USDT?.toLowerCase(),
+          CONTRACTS.USDC?.toLowerCase(),
           CONTRACTS.MOCK_ERC20?.toLowerCase(),
           ...knownWhitelistedTokens.map((t) => t.toLowerCase()),
         ]),
@@ -589,7 +591,7 @@ export default function AdminPage() {
         let arbiterEvents: any[] = [];
         let lastError: any = null;
 
-        for (const rpcUrl of CELO_MAINNET.rpcUrls) {
+        for (const rpcUrl of HASHKEY_TESTNET.rpcUrls) {
           try {
             provider = new ethers.JsonRpcProvider(rpcUrl);
             const contractWithProvider = new ethers.Contract(
@@ -1715,11 +1717,11 @@ export default function AdminPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setTokenAddress(CONTRACTS.CUSD_MAINNET)}
+                    onClick={() => setTokenAddress(CONTRACTS.MOCK_ERC20)}
                     className="gap-2 w-full"
                   >
                     <Shield className="h-3 w-3" />
-                    Whitelist cUSD ({CONTRACTS.CUSD_MAINNET.slice(0, 10)}...)
+                    Whitelist Mock Token ({CONTRACTS.MOCK_ERC20.slice(0, 10)}...)
                   </Button>
                 </div>
               </div>
@@ -1816,14 +1818,14 @@ export default function AdminPage() {
                   Network
                 </Label>
                 <p className="text-sm bg-muted/50 p-3 rounded-lg">
-                  Celo Mainnet
+                  HashKey Chain Testnet
                 </p>
               </div>
               <div>
                 <Label className="text-muted-foreground mb-2 block">
                   Chain ID
                 </Label>
-                <p className="text-sm bg-muted/50 p-3 rounded-lg">42220</p>
+                <p className="text-sm bg-muted/50 p-3 rounded-lg">133</p>
               </div>
               <div>
                 <Label className="text-muted-foreground mb-2 block">

@@ -175,7 +175,7 @@ export function ProjectDetailsStep({
               <p className="text-xs text-muted-foreground mt-1">
                 {formData.isOpenJob
                   ? "Leave empty for open job applications"
-                  : "Valid Celo address required for direct escrow"}
+                  : "Valid address required for direct escrow"}
               </p>
             )}
           </div>
@@ -190,7 +190,7 @@ export function ProjectDetailsStep({
               onChange={(e) => onUpdate({ useNativeToken: e.target.checked })}
               className="rounded"
             />
-            <Label htmlFor="useNativeToken">Use Native Token (CELO)</Label>
+            <Label htmlFor="useNativeToken">Use Native Token (HSK)</Label>
           </div>
 
           {!formData.useNativeToken && (

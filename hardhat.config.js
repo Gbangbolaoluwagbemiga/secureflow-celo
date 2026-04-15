@@ -6,21 +6,12 @@ module.exports = {
   solidity: {
     compilers: [
       {
-        version: "0.8.19",
-        settings: {
-          optimizer: {
-            enabled: true,
-            runs: 1,
-          },
-          viaIR: true,
-        },
-      },
-      {
         version: "0.8.26",
         settings: {
           optimizer: {
             enabled: true,
-            runs: 1,
+            // Higher runs typically reduces deployed bytecode size
+            runs: 200,
           },
           viaIR: true,
         },
@@ -33,6 +24,22 @@ module.exports = {
     },
     localhost: {
       url: "http://127.0.0.1:8545",
+    },
+    hashkey: {
+      url: process.env.HASHKEY_RPC_URL || "https://mainnet.hsk.xyz",
+      accounts:
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      chainId: 177, // HashKey Chain mainnet chain ID
+      gas: 8000000,
+      // Let ethers automatically determine gas price
+    },
+    hashkeyTestnet: {
+      url: process.env.HASHKEY_TESTNET_RPC_URL || "https://testnet.hsk.xyz",
+      accounts:
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      chainId: 133, // HashKey Chain testnet chain ID
+      gas: 8000000,
+      // Let ethers automatically determine gas price
     },
     celo: {
       url: process.env.CELO_RPC_URL || "https://celo.drpc.org",
@@ -85,8 +92,32 @@ module.exports = {
     artifacts: "./artifacts",
   },
   etherscan: {
-    apiKey: process.env.CELOSCAN_API_KEY || "",
+    apiKey: {
+      celo: process.env.CELOSCAN_API_KEY || "",
+      celoTestnet: process.env.CELOSCAN_API_KEY || "",
+      base: process.env.BASESCAN_API_KEY || "",
+      baseSepolia: process.env.BASESCAN_API_KEY || "",
+      // Blockscout is typically API-keyless, but the plugin requires a non-empty string.
+      hashkey: process.env.HASHKEYSCAN_API_KEY || "hashkey",
+      hashkeyTestnet: process.env.HASHKEYSCAN_API_KEY || "hashkey",
+    },
     customChains: [
+      {
+        network: "hashkey",
+        chainId: 177,
+        urls: {
+          apiURL: "https://hashkey.blockscout.com/api",
+          browserURL: "https://hashkey.blockscout.com",
+        },
+      },
+      {
+        network: "hashkeyTestnet",
+        chainId: 133,
+        urls: {
+          apiURL: "https://testnet-explorer.hsk.xyz/api",
+          browserURL: "https://testnet-explorer.hsk.xyz",
+        },
+      },
       {
         network: "celo",
         chainId: 42220,

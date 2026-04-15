@@ -33,7 +33,6 @@ import {
   type FilterStatus,
   type SortOption,
 } from "@/components/dashboard/filter-sort-controls";
-import { GoodWalletConnect } from "@/components/gooddollar/goodwallet-connect";
 
 export default function DashboardPage() {
   const { wallet, getContract } = useWeb3();
@@ -145,14 +144,14 @@ export default function DashboardPage() {
   ): Promise<{ freelancerAmount: number; clientAmount: number } | null> => {
     try {
       const { ethers } = await import("ethers");
-      const { CONTRACTS, CELO_MAINNET } = await import("@/lib/web3/config");
+      const { CONTRACTS, HASHKEY_MAINNET } = await import("@/lib/web3/config");
       const { SECUREFLOW_ABI } = await import("@/lib/web3/abis");
 
       // Try to get provider from wallet context or use RPC
       let provider: any = null;
       let lastError: any = null;
 
-      for (const rpcUrl of CELO_MAINNET.rpcUrls) {
+      for (const rpcUrl of HASHKEY_MAINNET.rpcUrls) {
         try {
           provider = new ethers.JsonRpcProvider(rpcUrl);
           // Test connection
@@ -879,11 +878,11 @@ export default function DashboardPage() {
     return {
       name:
         tokenAddress === "0x0000000000000000000000000000000000000000"
-          ? "MON"
+          ? "HSK"
           : "Token",
       symbol:
         tokenAddress === "0x0000000000000000000000000000000000000000"
-          ? "MON"
+          ? "HSK"
           : "TKN",
     };
   };
@@ -1358,11 +1357,6 @@ export default function DashboardPage() {
           onRefresh={handleRefresh}
           isRefreshing={isRefreshing}
         />
-
-        {/* GoodDollar Connect Integration */}
-        <div className="mb-8">
-          <GoodWalletConnect />
-        </div>
 
         <DashboardStats escrows={escrows} />
 

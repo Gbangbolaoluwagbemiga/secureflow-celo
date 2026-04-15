@@ -1,7 +1,7 @@
 {
-  "name": "SecureFlow - Trustless Escrow on Celo",
+  "name": "SecureFlow - Trustless Escrow on HashKey",
   "short_name": "SecureFlow",
-  "description": "Trustless payments with transparent milestones powered by Celo",
+  "description": "Trustless payments with transparent milestones powered by HashKey Chain",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",

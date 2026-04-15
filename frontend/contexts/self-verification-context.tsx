@@ -9,7 +9,6 @@ import { SECUREFLOW_ABI } from "@/lib/web3/abis";
 
 interface SelfVerificationContextType {
   isVerified: boolean;
-  isGoodDollarVerified: boolean;
   isVerifying: boolean;
   verificationTimestamp: number | null;
   verifyIdentity: () => Promise<void>;
@@ -25,7 +24,6 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
   const { wallet, getContract } = useWeb3();
   const { toast } = useToast();
   const [isVerified, setIsVerified] = useState(false);
-  const [isGoodDollarVerified, setIsGoodDollarVerified] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationTimestamp, setVerificationTimestamp] = useState<number | null>(null);
   const [selfApp, setSelfApp] = useState<any>(null);
@@ -33,49 +31,11 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const hasStartedVerificationRef = useRef(false);
 
-  // Build selfApp dynamically using @selfxyz/qrcode (loaded at runtime)
+  // NOTE: Self Protocol UI is disabled in this HashKey hackathon build.
+  // (The @selfxyz packages pull in git/ssh deps that break reproducible installs.)
   useEffect(() => {
     const init = async () => {
-      if (typeof window === "undefined") return;
-
-      const isLocalhost = window.location.hostname === "localhost" ||
-        window.location.hostname === "127.0.0.1";
-
-      if (isLocalhost) {
-        console.warn("Self Protocol is disabled on localhost.");
-        return;
-      }
-
-      if (!wallet.isConnected || !wallet.address) {
-        setSelfApp(null);
-        return;
-      }
-
-      try {
-        const mod = await import(/* webpackIgnore: true */ "@selfxyz/qrcode");
-        const SelfAppBuilder = mod.SelfAppBuilder;
-
-        const endpointOverride = (process.env.NEXT_PUBLIC_SELF_ENDPOINT as string) || `${window.location.origin}/api/self/verify`;
-        const scopeAuto = (process.env.NEXT_PUBLIC_SELF_SCOPE as string) || "secureflow-identity";
-
-        const app = new SelfAppBuilder({
-          appName: "SecureFlow",
-          logoBase64: `${window.location.origin}/secureflow-logo.svg`,
-          endpointType: "https",
-          endpoint: endpointOverride,
-          scope: scopeAuto,
-          userId: wallet.address.toLowerCase(),
-          userIdType: 'hex',
-          version: 2,
-          chainID: 42220,
-          disclosures: { minimumAge: 18 } as any,
-        }).build();
-
-        setSelfApp(app);
-      } catch (error) {
-        console.error("Self Protocol init error:", error);
-        setSelfApp(null);
-      }
+      setSelfApp(null);
     };
     init();
   }, [wallet.address, wallet.isConnected]);
@@ -85,7 +45,6 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
     if (!wallet.isConnected || !wallet.address) {
       if (!skipStateUpdate) {
         setIsVerified(false);
-        setIsGoodDollarVerified(false);
       }
       return false;
     }
@@ -93,19 +52,16 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
     try {
       const contract = getContract(CONTRACTS.SECUREFLOW_ESCROW, SECUREFLOW_ABI);
 
-      // Check both Self Protocol (current app) and GoodDollar Identity
-      const [selfVerified, gdVerified, timestamp] = await Promise.all([
+      const [selfVerified, timestamp] = await Promise.all([
         contract.call("selfVerifiedUsers", wallet.address).catch(() => false),
-        contract.call("isVerified", wallet.address).catch(() => false),
         contract.call("verificationTimestamp", wallet.address).catch(() => null)
       ]);
 
-      const isVerifiedValue = Boolean(selfVerified || gdVerified);
+      const isVerifiedValue = Boolean(selfVerified);
       const timestampValue = timestamp ? Number(timestamp) : null;
 
       if (!skipStateUpdate) {
         setIsVerified(isVerifiedValue);
-        setIsGoodDollarVerified(Boolean(gdVerified));
         setVerificationTimestamp(timestampValue);
         setVerificationAvailable(true);
 
@@ -114,7 +70,6 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
             `self_verified_${wallet.address.toLowerCase()}`,
             JSON.stringify({
               verified: isVerifiedValue,
-              gdVerified: Boolean(gdVerified),
               timestamp: timestampValue,
             })
           );
@@ -126,7 +81,6 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
       if (!skipStateUpdate) {
         setVerificationAvailable(false);
         setIsVerified(false);
-        setIsGoodDollarVerified(false);
       }
       return false;
     }
@@ -148,14 +102,13 @@ export function SelfVerificationProvider({ children }: { children: ReactNode }) 
   const contextValue = useMemo(
     () => ({
       isVerified,
-      isGoodDollarVerified,
       isVerifying,
       verificationTimestamp,
       verifyIdentity,
       checkVerificationStatus,
       SelfVerificationComponent,
     }),
-    [isVerified, isGoodDollarVerified, isVerifying, verificationTimestamp, verifyIdentity, checkVerificationStatus, SelfVerificationComponent]
+    [isVerified, isVerifying, verificationTimestamp, verifyIdentity, checkVerificationStatus, SelfVerificationComponent]
   );
 
 

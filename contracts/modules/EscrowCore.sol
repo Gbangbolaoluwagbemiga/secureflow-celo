@@ -8,7 +8,6 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/draft-IERC20Permit.sol";
 import "../interfaces/ISecureFlow.sol";
-import "../interfaces/IEngagementRewards.sol";
 
 abstract contract EscrowCore is ReentrancyGuard, Ownable, Pausable, ISecureFlow {
     using SafeERC20 for IERC20;
@@ -57,10 +56,6 @@ abstract contract EscrowCore is ReentrancyGuard, Ownable, Pausable, ISecureFlow 
     // Verification Systems
     mapping(address => bool) public selfVerifiedUsers; // Self Protocol
     mapping(address => uint256) public verificationTimestamp;
-    address public identity; // GoodDollar Identity contract
-
-    // GoodDollar Engagement Rewards
-    IEngagementRewards public engagementRewards;
 
     // ===== Modifiers =====
     modifier onlyEscrowParticipant(uint256 escrowId) {
@@ -128,17 +123,8 @@ abstract contract EscrowCore is ReentrancyGuard, Ownable, Pausable, ISecureFlow 
         
         // Check Self Protocol verification (manual/backend)
         if (selfVerifiedUsers[user]) return true;
-        
-        // Check GoodDollar Identity (on-chain whitelisting)
-        if (identity != address(0)) {
-            try IIdentity(identity).isWhitelisted(user) returns (bool whitelisted) {
-                return whitelisted;
-            } catch {
-                return false;
-            }
-        }
-        
-        return false;
+
+        return false;        
     }
 
     function _calculateFee(uint256 amount) internal view returns (uint256) {
@@ -172,7 +158,7 @@ abstract contract EscrowCore is ReentrancyGuard, Ownable, Pausable, ISecureFlow 
     }
 
     function _updateReputation(address user, uint256 points, string memory reason) internal {
-        // Only update reputation for verified users (Self Protocol or GoodDollar) to prevent Sybil attacks
+        // Only update reputation for verified users to prevent Sybil attacks
         if (isVerified(user)) {
             reputation[user] += points;
             emit ReputationUpdated(user, reputation[user], reason);

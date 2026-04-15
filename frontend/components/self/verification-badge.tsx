@@ -16,7 +16,7 @@ export function VerificationBadge({
   className,
   variant = "default",
 }: VerificationBadgeProps) {
-  const { isVerified, isGoodDollarVerified } = useSelfVerification();
+  const { isVerified } = useSelfVerification();
 
   if (!isVerified) return null;
 
@@ -33,20 +33,18 @@ export function VerificationBadge({
             )}
           >
             {variant === "compact" ? (
-              isGoodDollarVerified ? <ShieldCheck className="w-3 h-3" /> : <CheckCircle2 className="w-3 h-3" />
+              <CheckCircle2 className="w-3 h-3" />
             ) : (
               <>
-                {isGoodDollarVerified ? <ShieldCheck className="w-3 h-3 mr-1" /> : <Shield className="w-3 h-3 mr-1" />}
-                {isGoodDollarVerified ? "G$ Verified" : "Verified"}
+                <Shield className="w-3 h-3 mr-1" />
+                Verified
               </>
             )}
           </Badge>
         </TooltipTrigger>
         <TooltipContent>
           <p className="text-xs">
-            {isGoodDollarVerified
-              ? "This user has completed GoodDollar Face Verification"
-              : "This user has verified their identity via Self Protocol"}
+            This user has verified their identity via Self Protocol
           </p>
         </TooltipContent>
       </Tooltip>

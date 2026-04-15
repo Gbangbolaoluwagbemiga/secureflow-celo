@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useWeb3 } from "@/contexts/web3-context";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { HASHKEY_MAINNET } from "@/lib/web3/config";
 
 interface NetworkSetupDialogProps {
   open: boolean;
@@ -23,7 +24,7 @@ export function NetworkSetupDialog({
   open,
   onOpenChange,
 }: NetworkSetupDialogProps) {
-  const { addCeloNetwork, switchToCelo } = useWeb3();
+  const { addHashKeyNetwork, switchToHashKey } = useWeb3();
   const [isAdding, setIsAdding] = useState(false);
   const [isSwitching, setIsSwitching] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -35,14 +36,14 @@ export function NetworkSetupDialog({
     setSuccess(false);
 
     try {
-      const added = await addCeloNetwork();
+      const added = await addHashKeyNetwork();
       if (added) {
         setSuccess(true);
         // Try to switch after a short delay
         setTimeout(async () => {
           setIsSwitching(true);
           try {
-            await switchToCelo();
+            await switchToHashKey();
             // Close dialog after successful switch
             setTimeout(() => {
               onOpenChange(false);
@@ -55,7 +56,9 @@ export function NetworkSetupDialog({
           }
         }, 2000);
       } else {
-        setError("Failed to add Celo network. Please try again or add it manually.");
+        setError(
+          "Failed to add HashKey Chain. Please try again or add it manually."
+        );
       }
     } catch (err: any) {
       setError(err.message || "Failed to add network. Please try again.");
@@ -69,7 +72,7 @@ export function NetworkSetupDialog({
     setError(null);
 
     try {
-      await switchToCelo();
+      await switchToHashKey();
       setSuccess(true);
       setTimeout(() => {
         onOpenChange(false);
@@ -88,11 +91,11 @@ export function NetworkSetupDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-amber-500" />
-            Celo Network Required
+            HashKey Chain Required
           </DialogTitle>
           <DialogDescription className="pt-2">
-            To use SecureFlow, you need to add and connect to the Celo Mainnet
-            network in your wallet.
+            To use SecureFlow on HashKey, you need to add and connect to HashKey
+            Chain in your wallet.
           </DialogDescription>
         </DialogHeader>
 
@@ -105,8 +108,8 @@ export function NetworkSetupDialog({
               </AlertTitle>
               <AlertDescription className="text-green-700 dark:text-green-300">
                 {isSwitching
-                  ? "Switching to Celo Mainnet..."
-                  : "Please switch to Celo Mainnet in your wallet to continue."}
+                  ? "Switching to HashKey Chain..."
+                  : "Please switch to HashKey Chain in your wallet to continue."}
               </AlertDescription>
             </Alert>
           )}
@@ -125,19 +128,23 @@ export function NetworkSetupDialog({
               <div className="space-y-1 text-sm text-muted-foreground">
                 <div className="flex justify-between">
                   <span>Network Name:</span>
-                  <span className="font-mono">Celo</span>
+                  <span className="font-mono">{HASHKEY_MAINNET.chainName}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Chain ID:</span>
-                  <span className="font-mono">42220</span>
+                  <span className="font-mono">
+                    {Number.parseInt(HASHKEY_MAINNET.chainId, 16)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Currency:</span>
-                  <span className="font-mono">CELO</span>
+                  <span className="font-mono">
+                    {HASHKEY_MAINNET.nativeCurrency.symbol}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span>RPC URL:</span>
-                  <span className="font-mono text-xs">forno.celo.org</span>
+                  <span className="font-mono text-xs">mainnet.hsk.xyz</span>
                 </div>
               </div>
             </div>
@@ -145,27 +152,27 @@ export function NetworkSetupDialog({
 
           <div className="text-sm text-muted-foreground">
             <p>
-              Don't have CELO tokens? You can get them from:
+              Don't have HSK tokens? You can get them from:
             </p>
             <ul className="list-disc list-inside mt-2 space-y-1">
               <li>
                 <a
-                  href="https://valoraapp.com/"
+                  href="https://hashkey.blockscout.com"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary hover:underline"
                 >
-                  Valora Wallet
+                  HashKey Explorer
                 </a>
               </li>
               <li>
                 <a
-                  href="https://celo.org/developers/faucet"
+                  href="https://docs.hashkeychain.net/docs/Developer-QuickStart"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary hover:underline"
                 >
-                  Celo Faucet (for testnet)
+                  HashKey Chain Developer QuickStart
                 </a>
               </li>
             </ul>
@@ -192,7 +199,7 @@ export function NetworkSetupDialog({
                   Adding...
                 </>
               ) : (
-                "Add Celo Network"
+                "Add HashKey Chain"
               )}
             </Button>
           ) : (
@@ -207,7 +214,7 @@ export function NetworkSetupDialog({
                   Switching...
                 </>
               ) : (
-                "Switch to Celo"
+                "Switch to HashKey"
               )}
             </Button>
           )}

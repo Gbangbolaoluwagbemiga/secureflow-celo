@@ -9,22 +9,17 @@ async function main() {
   console.log("🚀 Deploying contracts to", hre.network.name);
   console.log("📝 Deployer address:", deployer.address);
 
-  // Use native tokens on mainnets or deploy MockERC20 for testing
+  // Use existing tokens on HashKey mainnet, or deploy MockERC20 for testnet/testing
   let tokenAddress;
   let tokenName;
   let tokenAbi;
   let mockTokenAddress = null;
 
-  if (hre.network.name === "celo") {
-    // cUSD on Celo mainnet: 0x765DE816845861e75A25fCA122bb6898B8B1282a
-    tokenAddress = "0x765DE816845861e75A25fCA122bb6898B8B1282a";
-    tokenName = "cUSD";
-    console.log("✅ Using cUSD on Celo mainnet:", tokenAddress);
-  } else if (hre.network.name === "base") {
-    // USDC on Base mainnet: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-    tokenAddress = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
-    tokenName = "USDC";
-    console.log("✅ Using USDC on Base mainnet:", tokenAddress);
+  if (hre.network.name === "hashkey") {
+    // HashKey Chain mainnet USDT (official)
+    tokenAddress = "0xf1b50ed67a9e2cc94ad3c477779e2d4cbfff9029";
+    tokenName = "USDT";
+    console.log("✅ Using USDT on HashKey Chain mainnet:", tokenAddress);
   } else {
     // Deploy MockERC20 token for testing on other networks
     console.log("\n📦 Deploying MockERC20 token...");
@@ -42,16 +37,16 @@ async function main() {
     console.log("✅ MockERC20 deployed to:", tokenAddress);
   }
 
-  // Deploy SecureFlow
-  console.log("\n🔒 Deploying SecureFlow...");
-  const SecureFlow = await hre.ethers.getContractFactory("SecureFlow");
+  // Deploy SecureFlow (PayFi build)
+  console.log("\n🔒 Deploying SecureFlowPayFi...");
+  const SecureFlow = await hre.ethers.getContractFactory("SecureFlowPayFi");
 
   // Constructor parameters: tokenAddress, feeCollector, platformFeeBP
   const feeCollector = deployer.address; // Use deployer as fee collector for now
   const platformFeeBP = 0; // 0% fees for hackathon demo
 
   const secureFlow = await SecureFlow.deploy(
-    tokenAddress, // token address (USDC on Base or MockERC20 on testnets)
+    tokenAddress, // token address (USDT on HashKey mainnet or MockERC20 on testnets)
     feeCollector, // feeCollector
     platformFeeBP // platformFeeBP
   );
@@ -70,14 +65,6 @@ async function main() {
   // Whitelist the token
   await secureFlow.whitelistToken(tokenAddress);
 
-  // Set GoodDollar Identity address on Celo mainnet
-  if (hre.network.name === "celo") {
-    const GDOLLAR_IDENTITY = "0xFC325BBfBA3f9547d792900eeCf69542a188846C";
-    console.log("\n🆔 Setting GoodDollar Identity address...");
-    await secureFlow.setIdentity(GDOLLAR_IDENTITY);
-    console.log("✅ Identity address set to:", GDOLLAR_IDENTITY);
-  }
-
   const secureFlowAddress = await secureFlow.getAddress();
 
   // Get contract info
@@ -88,6 +75,7 @@ async function main() {
     contracts: {
       SecureFlow: secureFlowAddress,
       Token: tokenAddress,
+      ...(mockTokenAddress ? { MockERC20: mockTokenAddress } : {}),
     },
     features: [
       "🚀 MODULAR ARCHITECTURE - Clean separation of concerns",
@@ -120,7 +108,7 @@ async function main() {
   );
 
   console.log("\n🎉 Deployment completed successfully!");
-  console.log("📄 SecureFlow deployed to:", secureFlowAddress);
+  console.log("📄 SecureFlowPayFi deployed to:", secureFlowAddress);
   console.log("💰 Token address:", tokenAddress, `(${tokenName})`);
   console.log("📊 Network:", hre.network.name);
   console.log("🔗 Chain ID:", (await hre.ethers.provider.getNetwork()).chainId);
@@ -130,16 +118,16 @@ async function main() {
   console.log("\n⏳ Waiting for block confirmations before verification...");
   await new Promise((resolve) => setTimeout(resolve, 30000)); // Wait 30 seconds
 
-  // Verify SecureFlow contract
-  console.log("\n🔍 Verifying SecureFlow contract...");
+  // Verify SecureFlowPayFi contract
+  console.log("\n🔍 Verifying SecureFlowPayFi contract...");
   try {
     await hre.run("verify:verify", {
       address: secureFlowAddress,
       constructorArguments: [tokenAddress, feeCollector, platformFeeBP],
     });
-    console.log("✅ SecureFlow contract verified!");
+    console.log("✅ SecureFlowPayFi contract verified!");
   } catch (error) {
-    console.log("⚠️ SecureFlow verification failed:", error.message);
+    console.log("⚠️ SecureFlowPayFi verification failed:", error.message);
     if (error.message.includes("Already Verified")) {
       console.log("ℹ️ Contract is already verified");
     }
@@ -169,14 +157,10 @@ async function main() {
   // Display explorer links
   const chainId = Number((await hre.ethers.provider.getNetwork()).chainId);
   let explorerUrl = "";
-  if (chainId === 42220) {
-    explorerUrl = "https://celoscan.io/address/";
-  } else if (chainId === 44787) {
-    explorerUrl = "https://alfajores.celoscan.io/address/";
-  } else if (chainId === 8453) {
-    explorerUrl = "https://basescan.org/address/";
-  } else if (chainId === 84532) {
-    explorerUrl = "https://sepolia.basescan.org/address/";
+  if (chainId === 177) {
+    explorerUrl = "https://hashkey.blockscout.com/address/";
+  } else if (chainId === 133) {
+    explorerUrl = "https://testnet-explorer.hsk.xyz/address/";
   }
 
   if (explorerUrl) {

@@ -1,62 +1,46 @@
-export const CELO_MAINNET = {
-  chainId: "0xA4EC", // 42220 in hex (Celo Mainnet)
-  chainName: "Celo",
+export const HASHKEY_MAINNET = {
+  chainId: "0xB1", // 177 in hex (HashKey Chain Mainnet)
+  chainName: "HashKey Chain",
   nativeCurrency: {
-    name: "CELO",
-    symbol: "CELO",
+    name: "HSK",
+    symbol: "HSK",
     decimals: 18,
   },
-  rpcUrls: [
-    "https://forno.celo.org",
-    "https://rpc.ankr.com/celo",
-    "https://1rpc.io/celo",
-    "https://celo.publicnode.com",
-  ],
-  blockExplorerUrls: ["https://celoscan.io"],
+  rpcUrls: ["https://mainnet.hsk.xyz"],
+  blockExplorerUrls: ["https://hashkey.blockscout.com"],
 };
 
-export const CELO_TESTNET = {
-  chainId: "0xAEF3", // 44787 in hex (Celo Alfajores Testnet)
-  chainName: "Celo Alfajores",
+export const HASHKEY_TESTNET = {
+  chainId: "0x85", // 133 in hex (HashKey Chain Testnet)
+  chainName: "HashKey Chain Testnet",
   nativeCurrency: {
-    name: "CELO",
-    symbol: "CELO",
+    name: "HSK",
+    symbol: "HSK",
     decimals: 18,
   },
-  rpcUrls: ["https://alfajores-forno.celo-testnet.org"],
-  blockExplorerUrls: ["https://alfajores.celoscan.io"],
+  rpcUrls: ["https://testnet.hsk.xyz"],
+  blockExplorerUrls: ["https://testnet-explorer.hsk.xyz"],
 };
 
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-// Prefer env overrides for deploys; fall back to known defaults
+// Prefer env overrides for deploys; fall back to latest testnet deploy
 const SECUREFLOW_ADDR =
   process.env.NEXT_PUBLIC_SECUREFLOW_ESCROW ||
-  "0x87b1D53953c7CBc4ec590C85A5c363a60d2eA92C";
+  "0x2b8Cb611f8EADcfBbfDa69e4d481A597e7b9dF9a";
 
 export const CONTRACTS = {
-  // Celo Mainnet
-  SECUREFLOW_ESCROW_MAINNET: SECUREFLOW_ADDR,
-  CUSD_MAINNET: "0x765DE816845861e75A25fCA122bb6898B8B1282a",
-
-  // Default contracts (used by frontend) - Celo Mainnet
+  // HashKey Chain (PayFi default)
   SECUREFLOW_ESCROW: SECUREFLOW_ADDR,
-  USDC: "0x765DE816845861e75A25fCA122bb6898B8B1282a", // cUSD on Celo
-  MOCK_ERC20: "0x765DE816845861e75A25fCA122bb6898B8B1282a", // cUSD on Celo
+  // Official token contracts on HashKey Chain mainnet
+  // Source: https://docs.hashkeychain.net/docs/Build-on-HashKey-Chain/Token-Contracts
+  USDT: "0xf1b50ed67a9e2cc94ad3c477779e2d4cbfff9029",
+  USDC: "0x054ed45810DbBAb8B27668922D110669c9D88D0a",
+  WETH: "0xefd4bC9afD210517803f293ABABd701CaeeCdfd0",
+  WHSK: "0xB210D2120d57b758EE163cFfb43e73728c471Cf1",
 
-  // GoodDollar (G$) on Celo Mainnet
-  // Official address: https://docs.gooddollar.org/
-  GDOLLAR_CELO:
-    process.env.NEXT_PUBLIC_GDOLLAR_CELO ||
-    "0x62B8B11039FcfE5aB0C56E502b1C372A3d2a9c7A", // G$ on Celo (official)
-
-  // GoodDollar Identity on Celo
-  GDOLLAR_IDENTITY:
-    process.env.NEXT_PUBLIC_GDOLLAR_IDENTITY ||
-    "0xFC325BBfBA3f9547d792900eeCf69542a188846C", // Identity on Celo
-
-  CELOSCAN_API_KEY:
-    process.env.NEXT_PUBLIC_CELOSCAN_API_KEY ||
-    process.env.CELOSCAN_API_KEY ||
-    "AZE1AGQSIEDRMAYGKUXFPNRHMU5YSTV4HS",
+  // Back-compat for older UI assumptions
+  MOCK_ERC20:
+    process.env.NEXT_PUBLIC_MOCK_ERC20 ||
+    "0x54290C255108E547877C630cC55b23a2A62a2dAF",
 };

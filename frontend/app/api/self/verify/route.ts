@@ -3,45 +3,10 @@ import { CONTRACTS } from "@/lib/web3/config";
 import { SECUREFLOW_ABI } from "@/lib/web3/abis";
 import { ethers } from "ethers";
 
-// Lazy-load Self Protocol Verifier to avoid build-time issues
-let verifier: any = null;
-let verifierError: Error | null = null;
-
-async function getVerifier() {
-  if (verifier) return verifier;
-  if (verifierError) throw verifierError;
-  
-  try {
-    const { SelfBackendVerifier, AllIds, DefaultConfigStore } = await import("@selfxyz/core");
-    const endpointType = process.env.NEXT_PUBLIC_SELF_ENDPOINT_TYPE || '';
-    const mockPassport = (
-      (typeof endpointType === 'string' && endpointType.includes('staging')) ||
-      process.env.SELF_DEV_MODE === 'true'
-    );
-    const scopeEnv = process.env.SELF_SCOPE_ID || process.env.NEXT_PUBLIC_SELF_SCOPE || "secureflow-identity";
-    // const configId = process.env.NEXT_PUBLIC_SELF_CONFIG_ID || "";
-    // Reverting to ad-hoc verification to match ZeroSum style (no configId)
-    const configId = ""; 
-    verifier = new SelfBackendVerifier(
-      scopeEnv,
-      configId,
-      mockPassport,
-      AllIds,
-      new DefaultConfigStore({ minimumAge: 18 }),
-      "hex"
-    );
-    
-    return verifier;
-  } catch (error: any) {
-    verifierError = error;
-    throw error;
-  }
-}
-
-// Get Celo RPC provider
+// Get HashKey Chain testnet RPC provider
 function getProvider() {
   return new ethers.JsonRpcProvider(
-    process.env.CELO_RPC_URL || "https://forno.celo.org"
+    process.env.HASHKEY_TESTNET_RPC_URL || "https://testnet.hsk.xyz"
   );
 }
 
@@ -53,6 +18,18 @@ function getContract() {
 
 export async function POST(request: NextRequest) {
   try {
+    // Self Protocol verifier is disabled in this build to keep installs reproducible.
+    // Keep the endpoint so the frontend can degrade gracefully.
+    return NextResponse.json(
+      {
+        success: false,
+        verified: false,
+        message:
+          "Self Protocol verification is disabled in this build. Use admin verification on-chain instead.",
+      },
+      { status: 501 }
+    );
+
     // Try to get raw body first to see what we're actually receiving
     const contentType = request.headers.get("content-type") || "";
     let body: any;
@@ -202,119 +179,6 @@ export async function POST(request: NextRequest) {
       console.warn("⚠️ userAddress not found in payload, attempting verification without it");
     }
 
-    // Verify the proof using Self Protocol
-    try {
-      const selfVerifier = await getVerifier();
-      
-      // Determine attestation ID - Self Protocol uses numeric IDs
-      // 1 = Electronic Passport (NFC-enabled), 2 = EU ID Card (NFC-enabled)
-      // For minimumAge disclosure, use the attestation ID from the payload
-      // The verifier expects the numeric ID directly
-      let verificationAttestationId: number = 1; // Default to passport (ID: 1)
-      
-      if (finalAttestationId !== undefined && finalAttestationId !== null) {
-        // Use the attestation ID directly (should be a number)
-        if (typeof finalAttestationId === 'number') {
-          verificationAttestationId = finalAttestationId;
-        } else {
-          // Try to parse string numbers
-          const parsed = parseInt(String(finalAttestationId), 10);
-          verificationAttestationId = isNaN(parsed) ? 1 : parsed;
-        }
-      } else if (finalProof?.attestationId) {
-        const proofAttestationId = finalProof.attestationId;
-        if (typeof proofAttestationId === 'number') {
-          verificationAttestationId = proofAttestationId;
-        } else {
-          const parsed = parseInt(String(proofAttestationId), 10);
-          verificationAttestationId = isNaN(parsed) ? 1 : parsed;
-        }
-      }
-      
-      // For minimumAge disclosures, the attestation type might need special handling
-      // But we'll use the numeric ID from the payload
-      
-      console.log("🔍 Verifying with:", {
-        attestationId: verificationAttestationId,
-        rawAttestationId: finalAttestationId,
-        hasProof: !!finalProof,
-        hasPubSignals: !!finalPubSignals,
-        pubSignalsLength: finalPubSignals?.length,
-        userAddress: finalUserAddress || "NOT PROVIDED - will extract from verification"
-      });
-      
-      // Verify the proof - Self Protocol verifier handles the proof validation
-      const verificationResult = await selfVerifier.verify(
-        verificationAttestationId,
-        finalProof,
-        finalPubSignals,
-        finalUserContextData
-      );
-      
-      console.log("✅ Verification result:", verificationResult);
-
-      if (!verificationResult.valid) {
-        return NextResponse.json(
-          { error: "Verification failed", details: verificationResult },
-          { status: 400 }
-        );
-      }
-
-      // Extract userAddress from verification result if not provided
-      let verifiedUserAddress = finalUserAddress;
-      if (!verifiedUserAddress && verificationResult.userId) {
-        verifiedUserAddress = verificationResult.userId;
-      }
-      if (!verifiedUserAddress && verificationResult.address) {
-        verifiedUserAddress = verificationResult.address;
-      }
-
-      // If still no address, try to get it from publicSignals more aggressively
-      if (!verifiedUserAddress && finalPubSignals && Array.isArray(finalPubSignals)) {
-        // The address might be in publicSignals - check all elements
-        for (const signal of finalPubSignals) {
-          if (typeof signal === 'string') {
-            if (signal.startsWith('0x') && signal.length === 42 && ethers.isAddress(signal)) {
-              verifiedUserAddress = signal.toLowerCase();
-              break;
-            }
-          }
-        }
-      }
-
-      if (!verifiedUserAddress) {
-        return NextResponse.json(
-          { 
-            error: "Verification successful but unable to determine user address",
-            details: "Please ensure the Self app is configured with the correct userId (wallet address)",
-            verificationResult
-          },
-          { status: 400 }
-        );
-      }
-
-      // If verification is valid, update the smart contract
-      // Note: In production, you should use a backend signer or admin account
-      // For now, we'll return success and let the frontend handle the contract call
-      // In production, implement server-side contract interaction here
-
-      return NextResponse.json({
-        success: true,
-        verified: true,
-        userAddress: verifiedUserAddress.toLowerCase(),
-        timestamp: Math.floor(Date.now() / 1000),
-        message: "Verification successful. Please confirm the transaction to update your status on-chain.",
-      });
-    } catch (verifyError: any) {
-      console.error("Self Protocol verification error:", verifyError);
-      return NextResponse.json(
-        {
-          error: "Verification failed",
-          details: verifyError.message || "Unknown verification error",
-        },
-        { status: 400 }
-      );
-    }
   } catch (error: any) {
     console.error("API error:", error);
     return NextResponse.json(

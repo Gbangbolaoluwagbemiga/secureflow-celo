@@ -13,7 +13,7 @@ export function EOABalance() {
       <div className="flex items-center gap-2 text-xs">
         <span className="text-muted-foreground">EOA</span>
         <span className="font-mono">
-          {Number(wallet.balance).toFixed(4)} CELO
+          {Number(wallet.balance).toFixed(4)} HSK
         </span>
       </div>
     </Card>
